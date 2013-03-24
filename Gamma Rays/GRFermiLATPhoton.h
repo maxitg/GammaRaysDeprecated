@@ -26,7 +26,7 @@ enum GRFermiEventClass {
     GRFermiEventClassUltraclean = 3
     };
 
-class GRFermiLATPhoton : GRPhoton {
+class GRFermiLATPhoton : public GRPhoton {
     GRFermiConversionType conversionType;
     GRFermiEventClass eventClass;
     

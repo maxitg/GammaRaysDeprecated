@@ -15,6 +15,7 @@
 using namespace std;
 
 class GRCelestialSpherePoint {
+public:
     float ra;
     float dec;
     

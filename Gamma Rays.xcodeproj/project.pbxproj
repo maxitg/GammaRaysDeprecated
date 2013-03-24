@@ -15,6 +15,7 @@
 		69FF3C7C16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7A16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp */; };
 		69FF3C7F16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */; };
 		69FF3C8216FF68CF00BA79AB /* GRPhotonStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C8016FF68CF00BA79AB /* GRPhotonStorage.cpp */; };
+		69FF3C8416FF7B3300BA79AB /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69FF3C8316FF7B3300BA79AB /* libcurl.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,6 +47,7 @@
 		69FF3C7E16FF5EDD00BA79AB /* GRFermiLATPhoton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRFermiLATPhoton.h; sourceTree = "<group>"; };
 		69FF3C8016FF68CF00BA79AB /* GRPhotonStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRPhotonStorage.cpp; sourceTree = "<group>"; };
 		69FF3C8116FF68CF00BA79AB /* GRPhotonStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRPhotonStorage.h; sourceTree = "<group>"; };
+		69FF3C8316FF7B3300BA79AB /* libcurl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.dylib; path = usr/lib/libcurl.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				69FF3C8416FF7B3300BA79AB /* libcurl.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -62,6 +65,7 @@
 		69FF3C5616FF59FF00BA79AB = {
 			isa = PBXGroup;
 			children = (
+				69FF3C8316FF7B3300BA79AB /* libcurl.dylib */,
 				69FF3C6116FF59FF00BA79AB /* Gamma Rays */,
 				69FF3C6016FF59FF00BA79AB /* Products */,
 			);

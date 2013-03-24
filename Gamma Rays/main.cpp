@@ -8,13 +8,14 @@
 
 #include <iostream>
 
-#include "GRFermiLATPhoton.h"
+#include "GRBurst.h"
 
 int main(int argc, const char * argv[])
 {
-    GRFermiLATPhoton photon = GRFermiLATPhoton(time(NULL), 12.34, 53.2, 1e6, GRFermiConversionTypeFront, GRFermiEventClassClean);
-    GRPhoton usualPhoton = GRPhoton(time(NULL), 12.34, 53.2, 1e5);
-    cout << usualPhoton.description();
-    
+    GRBurst burst = GRBurst("GRB080916C", 243216766, 119.88, -56.59);
+    vector <GRPhoton> photons = burst.photons();
+    for (vector <GRPhoton>::iterator i = photons.begin(); i != photons.end(); i++) {
+        cout << i->description() << endl;
+    }
     return 0;
 }

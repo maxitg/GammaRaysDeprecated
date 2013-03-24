@@ -10,5 +10,15 @@
 #define __Gamma_Rays__GRFermiLAT__
 
 #include <iostream>
+#include <vector>
+
+#include "GRFermiLATPhoton.h"
+
+class GRFermiLAT {
+    
+    
+public:
+    vector <GRFermiLATPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRCelestialSpherePoint location, GRFermiEventClass worstEventClass);
+};
 
 #endif /* defined(__Gamma_Rays__GRFermiLAT__) */
