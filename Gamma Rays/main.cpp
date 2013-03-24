@@ -8,11 +8,13 @@
 
 #include <iostream>
 
+#include "GRFermiLATPhoton.h"
+
 int main(int argc, const char * argv[])
 {
-
-    // insert code here...
-    std::cout << "Hello, World!\n";
+    GRFermiLATPhoton photon = GRFermiLATPhoton(time(NULL), 12.34, 53.2, 1e6, GRFermiConversionTypeFront, GRFermiEventClassClean);
+    GRPhoton usualPhoton = GRPhoton(time(NULL), 12.34, 53.2, 1e5);
+    cout << usualPhoton.description();
+    
     return 0;
 }
-

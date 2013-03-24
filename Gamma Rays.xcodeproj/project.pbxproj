@@ -9,6 +9,11 @@
 /* Begin PBXBuildFile section */
 		69FF3C6316FF59FF00BA79AB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C6216FF59FF00BA79AB /* main.cpp */; };
 		69FF3C6516FF59FF00BA79AB /* Gamma_Rays.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */; };
+		69FF3C7316FF5A7C00BA79AB /* GRBurst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */; };
+		69FF3C7616FF5A8F00BA79AB /* GRPhoton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7416FF5A8F00BA79AB /* GRPhoton.cpp */; };
+		69FF3C7916FF5A9A00BA79AB /* GRFermiLAT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */; };
+		69FF3C7C16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7A16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp */; };
+		69FF3C7F16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +33,16 @@
 		69FF3C5F16FF59FF00BA79AB /* Gamma Rays */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Gamma Rays"; sourceTree = BUILT_PRODUCTS_DIR; };
 		69FF3C6216FF59FF00BA79AB /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = Gamma_Rays.1; sourceTree = "<group>"; };
+		69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRBurst.cpp; sourceTree = "<group>"; };
+		69FF3C7216FF5A7C00BA79AB /* GRBurst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRBurst.h; sourceTree = "<group>"; };
+		69FF3C7416FF5A8F00BA79AB /* GRPhoton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRPhoton.cpp; sourceTree = "<group>"; };
+		69FF3C7516FF5A8F00BA79AB /* GRPhoton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRPhoton.h; sourceTree = "<group>"; };
+		69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRFermiLAT.cpp; sourceTree = "<group>"; };
+		69FF3C7816FF5A9A00BA79AB /* GRFermiLAT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRFermiLAT.h; sourceTree = "<group>"; };
+		69FF3C7A16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRCelestialSpherePoint.cpp; sourceTree = "<group>"; };
+		69FF3C7B16FF5BC600BA79AB /* GRCelestialSpherePoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRCelestialSpherePoint.h; sourceTree = "<group>"; };
+		69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRFermiLATPhoton.cpp; sourceTree = "<group>"; };
+		69FF3C7E16FF5EDD00BA79AB /* GRFermiLATPhoton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRFermiLATPhoton.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +76,16 @@
 			isa = PBXGroup;
 			children = (
 				69FF3C6216FF59FF00BA79AB /* main.cpp */,
+				69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */,
+				69FF3C7216FF5A7C00BA79AB /* GRBurst.h */,
+				69FF3C7A16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp */,
+				69FF3C7B16FF5BC600BA79AB /* GRCelestialSpherePoint.h */,
+				69FF3C7416FF5A8F00BA79AB /* GRPhoton.cpp */,
+				69FF3C7516FF5A8F00BA79AB /* GRPhoton.h */,
+				69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */,
+				69FF3C7E16FF5EDD00BA79AB /* GRFermiLATPhoton.h */,
+				69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */,
+				69FF3C7816FF5A9A00BA79AB /* GRFermiLAT.h */,
 				69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */,
 			);
 			path = "Gamma Rays";
@@ -118,6 +143,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				69FF3C6316FF59FF00BA79AB /* main.cpp in Sources */,
+				69FF3C7316FF5A7C00BA79AB /* GRBurst.cpp in Sources */,
+				69FF3C7616FF5A8F00BA79AB /* GRPhoton.cpp in Sources */,
+				69FF3C7916FF5A9A00BA79AB /* GRFermiLAT.cpp in Sources */,
+				69FF3C7C16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp in Sources */,
+				69FF3C7F16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
