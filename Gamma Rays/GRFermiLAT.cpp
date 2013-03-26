@@ -6,15 +6,27 @@
 //  Copyright (c) 2013 Maxim Piskunov. All rights reserved.
 //
 
+#include <math.h>
+
 #include <sstream>
+#include <algorithm>
 
 #include "GRFermiLAT.h"
 #include <curl/curl.h>
 
-size_t my_dummy_write(char *ptr, size_t size, size_t nmemb, void *userdata)
-{
-    cout << ptr;
+size_t GRFermiLAT::handleFermiDataServerResponce(char *ptr, size_t size, size_t nmemb, GRFermiLAT *me) {
+    return me->saveFermiDataServerResponce(ptr, size, nmemb);
+}
+
+size_t GRFermiLAT::saveFermiDataServerResponce(char *ptr, size_t size, size_t nmemb) {
+    fermiDataServerResponce.append(ptr, size*nmemb);
     return size * nmemb;
+}
+
+size_t GRFermiLAT::saveFermiDataServerResponceToFile(char *ptr, size_t size, size_t nmemb, FILE *stream) {
+    size_t written;
+    written = fwrite(ptr, size, nmemb, stream);
+    return written;
 }
 
 vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRCelestialSpherePoint location, GRFermiEventClass worstEventClass) {
@@ -40,22 +52,20 @@ vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, f
     */
 
     ostringstream coordfield;
-    coordfield << location.ra << ", " << location.dec;
-    const char *coordfield_str = coordfield.str().c_str();
+    coordfield << fixed << location.ra << ", " << location.dec;
     
     ostringstream shapefield;
-    shapefield << 40.;
-    const char *shapefield_str = shapefield.str().c_str();
+    shapefield << fixed << 40.;
     
     ostringstream timefield;
-    timefield << startTime << ", " << endTime;
-    const char *timefield_str = timefield.str().c_str();
+    timefield << fixed << startTime << ", " << endTime;
     
     ostringstream energyfield;
-    energyfield << minEnergy << ", " << maxEnergy;
-    const char *energyfield_str = energyfield.str().c_str();
+    if (minEnergy < 30.) minEnergy = 30.;
+    if (maxEnergy > 300000.) maxEnergy = 300000.;
+    energyfield << fixed << minEnergy << ", " << maxEnergy;
     
-    const char *photonOrExtendedOrNone_str = (worstEventClass == GRFermiEventClassTransient ? "Extended" : "Photon");
+    string photonOrExtendedOrNone = (worstEventClass == GRFermiEventClassTransient ? "Extended" : "Photon");
     
     CURL *curl;
     CURLcode res;
@@ -74,7 +84,7 @@ vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, f
     curl_formadd(&formpost,
                  &lastptr,
                  CURLFORM_COPYNAME, "coordfield",
-                 CURLFORM_COPYCONTENTS, coordfield_str,
+                 CURLFORM_COPYCONTENTS, coordfield.str().c_str(),
                  CURLFORM_END);
     
     curl_formadd(&formpost,
@@ -86,13 +96,13 @@ vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, f
     curl_formadd(&formpost,
                  &lastptr,
                  CURLFORM_COPYNAME, "shapefield",
-                 CURLFORM_COPYCONTENTS, shapefield_str,
+                 CURLFORM_COPYCONTENTS, shapefield.str().c_str(),
                  CURLFORM_END);
     
     curl_formadd(&formpost,
                  &lastptr,
                  CURLFORM_COPYNAME, "timefield",
-                 CURLFORM_COPYCONTENTS, timefield_str,
+                 CURLFORM_COPYCONTENTS, timefield.str().c_str(),
                  CURLFORM_END);
     
     curl_formadd(&formpost,
@@ -104,13 +114,13 @@ vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, f
     curl_formadd(&formpost,
                  &lastptr,
                  CURLFORM_COPYNAME, "energyfield",
-                 CURLFORM_COPYCONTENTS, energyfield_str,
+                 CURLFORM_COPYCONTENTS, energyfield.str().c_str(),
                  CURLFORM_END);
     
     curl_formadd(&formpost,
                  &lastptr,
                  CURLFORM_COPYNAME, "photonOrExtendedOrNone",
-                 CURLFORM_COPYCONTENTS, photonOrExtendedOrNone_str,
+                 CURLFORM_COPYCONTENTS, photonOrExtendedOrNone.c_str(),
                  CURLFORM_END);
     
     curl_formadd(&formpost,
@@ -129,13 +139,75 @@ vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, f
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, "http://fermi.gsfc.nasa.gov/cgi-bin/ssc/LAT/LATDataQuery.cgi");
         curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &my_dummy_write);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &this->handleFermiDataServerResponce);
         
         res = curl_easy_perform(curl);
         if(res != CURLE_OK) printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
         
         curl_easy_cleanup(curl);
         curl_formfree(formpost);
+    }
+    
+    string resultsURLLeft = "The results of your query may be found at <a href=\"";
+    string resultsURLRight = "\">";
+    size_t resultsURLIndex = fermiDataServerResponce.find(resultsURLLeft) + resultsURLLeft.size();
+    size_t resultsURLSize = fermiDataServerResponce.find(resultsURLRight, resultsURLIndex) - resultsURLIndex;
+    string resultsURL = fermiDataServerResponce.substr(resultsURLIndex, resultsURLSize);
+    
+    bool resultsReady = false;
+    vector <string> resultURLs;
+    
+    if (curl) {
+        while (!resultsReady) {
+            fermiDataServerResponce.clear();
+            curl = curl_easy_init();
+            curl_easy_setopt(curl, CURLOPT_URL, resultsURL.c_str());
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &this->handleFermiDataServerResponce);
+            res = curl_easy_perform(curl);
+            curl_easy_cleanup(curl);
+            
+            if (fermiDataServerResponce.find("Query complete") != string::npos) {
+                cout << "complete!" << endl;
+                resultsReady = true;
+            }
+            else if (fermiDataServerResponce.find("Query in progress") != string::npos) {
+                cout << "in progress! waiting..." << endl;
+                system("sleep 1");
+            }
+            else {
+                cout << "Query is in unknown state" << endl;
+                cout << "--- start of responce ---" << endl;
+                cout << fermiDataServerResponce << endl;
+                cout << "--- end of responce ---" << endl;
+                system("sleep 10");
+            }
+        }
+                        
+        size_t location = 0;
+        resultURLs.clear();
+        while ((location = fermiDataServerResponce.find(".fits\">", ++location)) != string::npos) {
+            size_t linkIndex = fermiDataServerResponce.rfind("href=\"", location);
+            resultURLs.push_back(fermiDataServerResponce.substr(linkIndex+6, (location+5) - (linkIndex+6)));
+        }
+    }
+    
+    for (int i = 0; i < resultURLs.size(); i++) {
+        cout << resultURLs[i] << endl;
+    }
+    if (resultURLs.size() == 0) cout << "zero results !!!" << endl;
+    
+    for (int i = 0; i < resultURLs.size(); i++) {
+        string filename = resultURLs[i].substr(resultURLs[i].rfind("/")+1);
+        FILE *fits = fopen(filename.c_str(), "wb");
+        curl = curl_easy_init();
+        curl_easy_setopt(curl, CURLOPT_URL, resultURLs[i].c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fits);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &this->saveFermiDataServerResponceToFile);
+        res = curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+        fclose(fits);
     }
     
     return result;
