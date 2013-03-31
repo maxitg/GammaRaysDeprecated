@@ -315,8 +315,8 @@ bool GRFermiLAT::fileExists(string queryHash, string fileName) {
     else return false;
 }
 
-void GRFermiLAT::gtselect(string queryHash) {
-    if (fileExists(queryHash, "filtered.fits")) return;
+string GRFermiLAT::gtselect(string queryHash) {
+    if (fileExists(queryHash, "filtered.fits")) return queryHash + "/filtered.fits";
     ostringstream cmd;
     cmd << fixed << "gtselect" << " ";
     cmd << "infile=@" << queryHash << "/eventList.txt" << " ";
@@ -335,10 +335,11 @@ void GRFermiLAT::gtselect(string queryHash) {
     cmd << "chatter=" << 0 << " ";
     cout << cmd.str() << endl;
     system(cmd.str().c_str());
+    return queryHash + "/filtered.fits";
 }
 
-void GRFermiLAT::gtmktime(string queryHash) {
-    if (fileExists(queryHash, "timed.fits")) return;
+string GRFermiLAT::gtmktime(string queryHash) {
+    if (fileExists(queryHash, "timed.fits")) return queryHash + "/timed.fits";
     ostringstream cmd;
     cmd << fixed << "gtmktime" << " ";
     cmd << "scfile=" << queryHash << "/spacecraft.fits" << " ";
@@ -348,10 +349,11 @@ void GRFermiLAT::gtmktime(string queryHash) {
     cmd << "outfile=" << queryHash << "/timed.fits" << " ";
     cout << cmd.str() << endl;
     system(cmd.str().c_str());
+    return queryHash + "/timed.fits";
 }
 
-void GRFermiLAT::gtltcube(string queryHash) {
-    if (fileExists(queryHash, "ltcube.fits")) return;
+string GRFermiLAT::gtltcube(string queryHash) {
+    if (fileExists(queryHash, "ltcube.fits")) return queryHash + "/ltcube.fits";
     ostringstream cmd;
     cmd << fixed << "gtltcube" << " ";
     cmd << fixed << "evfile=" << queryHash << "/timed.fits" << " ";
@@ -363,6 +365,7 @@ void GRFermiLAT::gtltcube(string queryHash) {
     cmd << fixed << "binsz=" << 1 << " ";
     cout << cmd.str() << endl;
     system(cmd.str().c_str());
+    return queryHash + "/ltcube.fits";
 }
 
 string GRFermiLAT::instrumentResponceFunctionName(GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
@@ -381,9 +384,9 @@ string GRFermiLAT::instrumentResponceFunctionName(GRFermiEventClass eventClass, 
     return result;
 }
 
-void GRFermiLAT::gtpsf(string queryHash, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
+string GRFermiLAT::gtpsf(string queryHash, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
     string psfFilename = "psf_" + instrumentResponceFunctionName(eventClass, conversionType) + ".fits";
-    if (fileExists(queryHash, psfFilename)) return;
+    if (fileExists(queryHash, psfFilename)) return queryHash + "/" + psfFilename;
     ostringstream cmd;
     cmd << fixed << "gtpsf" << " ";
     cmd << "expcube=" << queryHash << "/ltcube.fits" << " ";
@@ -400,12 +403,20 @@ void GRFermiLAT::gtpsf(string queryHash, GRLocation location, GRFermiEventClass 
     cmd << "chatter=" << 2 << " ";
     cout << cmd.str() << endl;
     system(cmd.str().c_str());
+    return queryHash + "/" + psfFilename;
 }
 
 void GRFermiLAT::processPhotons(string queryHash) {
     gtselect(queryHash);
     gtmktime(queryHash);
     gtltcube(queryHash);
+}
+
+GRPsf GRFermiLAT::psf(double startTime, double endTime, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
+    string queryHash = downloadPhotons(startTime, endTime, location);
+    processPhotons(queryHash);
+    string psfFilename = gtpsf(queryHash, location, eventClass, conversionType);
+    return GRPsf(psfFilename);
 }
 
 vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass) {

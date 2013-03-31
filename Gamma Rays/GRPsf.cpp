@@ -7,3 +7,11 @@
 //
 
 #include "GRPsf.h"
+
+GRPsf::GRPsf(string filename) {
+    
+}
+
+string GRPsf::description() {
+    return "It's a psf";
+}

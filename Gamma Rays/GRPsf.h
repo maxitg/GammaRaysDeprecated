@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -20,7 +21,8 @@ class GRPsf {
     vector <vector <float> > probabilityDensity;
     
 public:
-    
+    GRPsf(string fileName);
+    string description();
 };
 
 #endif /* defined(__Gamma_Rays__GRPsf__) */
