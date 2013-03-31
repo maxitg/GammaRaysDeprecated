@@ -13,10 +13,10 @@
 
 int main(int argc, const char * argv[])
 {
-    GRBurst burst = GRBurst("GRB100728095", 301976252, GRCoordinateSystemGalactic, 220.663, -19.2164);
+    GRBurst burst = GRBurst("GRB100728095", 301976252, GRCoordinateSystemGalactic, 220.663f, -19.2164f);
     
     GRFermiLAT fermiLAT;
-    GRLocation location(GRCoordinateSystemGalactic, 220.663, -19.2164);
+    GRLocation location(GRCoordinateSystemGalactic, 220.663f, -19.2164f);
     
     fermiLAT.psf(275631628-500, 275631628+2000, location, GRFermiEventClassTransient, GRFermiConversionTypeBack);
     

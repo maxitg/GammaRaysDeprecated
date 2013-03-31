@@ -11,6 +11,7 @@
 		69A656CF17080D5D0070E84C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CE17080D5C0070E84C /* Security.framework */; };
 		69A656D117080D6B0070E84C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656D017080D6B0070E84C /* Foundation.framework */; };
 		69A656DA170839BD0070E84C /* GRPsf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69A656D8170839BD0070E84C /* GRPsf.cpp */; };
+		69A656DC17084C6A0070E84C /* libCCfits.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656DB17084C6A0070E84C /* libCCfits.0.0.0.dylib */; };
 		69FF3C6316FF59FF00BA79AB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C6216FF59FF00BA79AB /* main.cpp */; };
 		69FF3C6516FF59FF00BA79AB /* Gamma_Rays.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */; };
 		69FF3C7316FF5A7C00BA79AB /* GRBurst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */; };
@@ -41,6 +42,7 @@
 		69A656D017080D6B0070E84C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		69A656D8170839BD0070E84C /* GRPsf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRPsf.cpp; sourceTree = "<group>"; };
 		69A656D9170839BD0070E84C /* GRPsf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRPsf.h; sourceTree = "<group>"; };
+		69A656DB17084C6A0070E84C /* libCCfits.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libCCfits.0.0.0.dylib; path = ../../../../../usr/local/lib/libCCfits.0.0.0.dylib; sourceTree = "<group>"; };
 		69FF3C5F16FF59FF00BA79AB /* Gamma Rays */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Gamma Rays"; sourceTree = BUILT_PRODUCTS_DIR; };
 		69FF3C6216FF59FF00BA79AB /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = Gamma_Rays.1; sourceTree = "<group>"; };
@@ -64,6 +66,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				69A656DC17084C6A0070E84C /* libCCfits.0.0.0.dylib in Frameworks */,
 				69A656D117080D6B0070E84C /* Foundation.framework in Frameworks */,
 				69A656CF17080D5D0070E84C /* Security.framework in Frameworks */,
 				69A656CD170805340070E84C /* libcrypto.dylib in Frameworks */,
@@ -77,6 +80,7 @@
 		69FF3C5616FF59FF00BA79AB = {
 			isa = PBXGroup;
 			children = (
+				69A656DB17084C6A0070E84C /* libCCfits.0.0.0.dylib */,
 				69A656D017080D6B0070E84C /* Foundation.framework */,
 				69A656CE17080D5C0070E84C /* Security.framework */,
 				69A656CC170805340070E84C /* libcrypto.dylib */,
@@ -244,6 +248,15 @@
 		69FF3C6916FF59FF00BA79AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GCC_WARN_UNINITIALIZED_AUTOS = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -251,6 +264,15 @@
 		69FF3C6A16FF59FF00BA79AB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GCC_WARN_UNINITIALIZED_AUTOS = NO;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

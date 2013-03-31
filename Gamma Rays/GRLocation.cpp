@@ -27,8 +27,8 @@ GRLocation::GRLocation(GRCoordinateSystem system, float angle0, float angle1) {
         double ra_rad = atan2( (cos(b)*cos(l-posangle)), (sin(b)*cos(pole_dec) - cos(b)*sin(pole_dec)*sin(l-posangle)) ) + pole_ra;
         double dec_rad = asin( cos(b)*cos(pole_dec)*sin(l-posangle) + sin(b)*sin(pole_dec) );
         
-        ra = ra_rad * 180. / M_PI;
-        dec = dec_rad * 180. / M_PI;
+        ra = (float)(ra_rad * 180. / M_PI);
+        dec = (float)(dec_rad * 180. / M_PI);
     }
 }
 

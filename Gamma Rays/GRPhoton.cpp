@@ -18,7 +18,7 @@ string GRPhoton::energyDescription() {
     
     ostringstream result;
     
-    int magnitude = round(log10(energy));
+    int magnitude = (int)round(log10(energy));
     
     if (magnitude < -3 || magnitude >= 12) result << energy * 1e6 << " eV";
     else if (magnitude < 0) result << energy * 1e3 << " keV";

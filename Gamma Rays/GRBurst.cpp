@@ -20,7 +20,7 @@ double GRBurst::endTimeUpperBound() {
 }
 
 vector <GRPhoton> GRBurst::photons() {
-    GRPhotonStorage *storage = nullptr;
+    GRPhotonStorage *storage = NULL;
     storage->getInstance();
     return storage->photons(startTimeLowerBound(), endTimeUpperBound(), 0, INFINITY, location);
 }

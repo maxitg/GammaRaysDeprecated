@@ -8,6 +8,9 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <errno.h>
+#include <unistd.h>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -288,7 +291,7 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
         fclose(fits);
     }
     
-    ofstream eventList(queryHash + "/eventList.txt");
+    ofstream eventList((queryHash + "/eventList.txt").c_str());
     for (int i = 0; i < filenames.size(); i++) {
         if (filenames[i].find("_EV") != string::npos) eventList << queryHash + "/" + filenames[i] << endl;
         else if (filenames[i].find("_SC") != string::npos) {
