@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include <sstream>
+#include <fstream>
 #include <algorithm>
 
 #include "GRFermiLAT.h"
@@ -29,50 +30,36 @@ size_t GRFermiLAT::saveFermiDataServerResponceToFile(char *ptr, size_t size, siz
     return written;
 }
 
-vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRCelestialSpherePoint location, GRFermiEventClass worstEventClass) {
+void GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation location) {
     
-    vector <GRFermiLATPhoton> result;
-    
-    /*  
-        <form method="post" action="/cgi-bin/ssc/LAT/LATDataQuery.cgi" enctype="multipart/form-data">
-            <input value="query" name="destination" type="hidden" />
-            <input value="Start Search" type="submit" />
-            <input value="Reset" type="reset" />
-            <table>
-                <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#objectNameOrCoordinates"><b>Object name or coordinates:</b></a></td><td><input value name="coordfield" type="text" /></td></tr>
-                <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#coordinateSystem"><b>Coordinate system:</b></a></td><td><select name="coordsystem"><option>J2000</option><option>B1950</option><option>Galactic</option></select></td></tr>
-                <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#searchRadius"><b>Search radius (degrees):</b></a></td><td><input value name="shapefield" type="text" /></td></tr>
-                <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#observationDates"><b>Observation dates:</b></a></td><td><input value name="timefield" type="text" /></td></tr>
-                <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#timeSystem"><b>Time system:</b></a></td><td><select name="timetype"><option>Gregorian</option><option>MET</option><option>MJD</option></select></td></tr>
-                <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#energyRange"><b>Energy range (MeV):</b></a></td><td><input value name="energyfield" type="text" /></td></tr>
-                <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#LATdataType"><b>LAT data type:</b></a></td><td><select name="photonOrExtendedOrNone"><option>Photon</option><option>Extended</option><option>None</option></select></td></tr>
-                <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#spacecraftData"><b>Spacecraft data:</b></a></td><td><input checked="checked" name="spacecraft" id="spacecraft" type="checkbox" /></td></tr>
-            </table>
-        </form>
-    */
-
+    /*
+        Input form to send out
+     <form method="post" action="/cgi-bin/ssc/LAT/LATDataQuery.cgi" enctype="multipart/form-data">
+     <input value="query" name="destination" type="hidden" />
+     <input value="Start Search" type="submit" />
+     <input value="Reset" type="reset" />
+     <table>
+     <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#objectNameOrCoordinates"><b>Object name or coordinates:</b></a></td><td><input value name="coordfield" type="text" /></td></tr>
+     <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#coordinateSystem"><b>Coordinate system:</b></a></td><td><select name="coordsystem"><option>J2000</option><option>B1950</option><option>Galactic</option></select></td></tr>
+     <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#searchRadius"><b>Search radius (degrees):</b></a></td><td><input value name="shapefield" type="text" /></td></tr>
+     <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#observationDates"><b>Observation dates:</b></a></td><td><input value name="timefield" type="text" /></td></tr>
+     <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#timeSystem"><b>Time system:</b></a></td><td><select name="timetype"><option>Gregorian</option><option>MET</option><option>MJD</option></select></td></tr>
+     <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#energyRange"><b>Energy range (MeV):</b></a></td><td><input value name="energyfield" type="text" /></td></tr>
+     <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#LATdataType"><b>LAT data type:</b></a></td><td><select name="photonOrExtendedOrNone"><option>Photon</option><option>Extended</option><option>None</option></select></td></tr>
+     <tr><td><a target="HelpWindow" href="http://fermi.gsfc.nasa.gov/ssc/LATDataQuery_help.html#spacecraftData"><b>Spacecraft data:</b></a></td><td><input checked="checked" name="spacecraft" id="spacecraft" type="checkbox" /></td></tr>
+     </table>
+     </form>
+     */
+        
     ostringstream coordfield;
     coordfield << fixed << location.ra << ", " << location.dec;
-    
-    ostringstream shapefield;
-    shapefield << fixed << 40.;
-    
     ostringstream timefield;
     timefield << fixed << startTime << ", " << endTime;
     
-    ostringstream energyfield;
-    if (minEnergy < 30.) minEnergy = 30.;
-    if (maxEnergy > 300000.) maxEnergy = 300000.;
-    energyfield << fixed << minEnergy << ", " << maxEnergy;
-    
-    string photonOrExtendedOrNone = (worstEventClass == GRFermiEventClassTransient ? "Extended" : "Photon");
-    
     CURL *curl;
     CURLcode res;
-    
     struct curl_httppost *formpost=NULL;
     struct curl_httppost *lastptr=NULL;
-    
     curl_global_init(CURL_GLOBAL_ALL);
     
     curl_formadd(&formpost,
@@ -96,7 +83,7 @@ vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, f
     curl_formadd(&formpost,
                  &lastptr,
                  CURLFORM_COPYNAME, "shapefield",
-                 CURLFORM_COPYCONTENTS, shapefield.str().c_str(),
+                 CURLFORM_COPYCONTENTS, "180",
                  CURLFORM_END);
     
     curl_formadd(&formpost,
@@ -114,13 +101,13 @@ vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, f
     curl_formadd(&formpost,
                  &lastptr,
                  CURLFORM_COPYNAME, "energyfield",
-                 CURLFORM_COPYCONTENTS, energyfield.str().c_str(),
+                 CURLFORM_COPYCONTENTS, "30, 300000",
                  CURLFORM_END);
     
     curl_formadd(&formpost,
                  &lastptr,
                  CURLFORM_COPYNAME, "photonOrExtendedOrNone",
-                 CURLFORM_COPYCONTENTS, photonOrExtendedOrNone.c_str(),
+                 CURLFORM_COPYCONTENTS, "Extended",
                  CURLFORM_END);
     
     curl_formadd(&formpost,
@@ -177,14 +164,14 @@ vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, f
                 system("sleep 1");
             }
             else {
-                cout << "Query is in unknown state" << endl;
-                cout << "--- start of responce ---" << endl;
-                cout << fermiDataServerResponce << endl;
-                cout << "--- end of responce ---" << endl;
-                system("sleep 10");
+                cerr << "Query is in unknown state. Download failed." << endl;
+                cerr << "--- start of responce ---" << endl;
+                cerr << fermiDataServerResponce << endl;
+                cerr << "--- end of responce ---" << endl;
+                return;
             }
         }
-                        
+        
         size_t location = 0;
         resultURLs.clear();
         while ((location = fermiDataServerResponce.find(".fits\">", ++location)) != string::npos) {
@@ -193,14 +180,11 @@ vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, f
         }
     }
     
-    for (int i = 0; i < resultURLs.size(); i++) {
-        cout << resultURLs[i] << endl;
-    }
-    if (resultURLs.size() == 0) cout << "zero results !!!" << endl;
+    vector <string> filenames(resultURLs.size());
     
     for (int i = 0; i < resultURLs.size(); i++) {
-        string filename = resultURLs[i].substr(resultURLs[i].rfind("/")+1);
-        FILE *fits = fopen(filename.c_str(), "wb");
+        filenames[i] = resultURLs[i].substr(resultURLs[i].rfind("/")+1);
+        FILE *fits = fopen(filenames[i].c_str(), "wb");
         curl = curl_easy_init();
         curl_easy_setopt(curl, CURLOPT_URL, resultURLs[i].c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fits);
@@ -210,5 +194,35 @@ vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, f
         fclose(fits);
     }
     
-    return result;
+    ofstream eventList("eventList.txt");
+    for (int i = 0; i < resultURLs.size(); i++) {
+        eventList << resultURLs[i] << endl;
+    }
+    eventList.close();
+    
+    if (resultURLs.size() == 0) cout << "zero results !!!" << endl;
+    else cout << "files downloaded:" << endl;
+    for (int i = 0; i < resultURLs.size(); i++) {
+        cout << resultURLs[i] << endl;
+    }
+}
+
+vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass) {
+    ostringstream gtselect;
+    gtselect << "gtselect infile=@eventList.txt outfile=dataSelected.fits " << fixed;
+    gtselect << "ra=" << location.ra << " ";
+    gtselect << "dec=" << location.dec << " ";
+    gtselect << "rad=" << "180" << " ";
+    gtselect << "tmin=" << startTime << " ";
+    gtselect << "tmax=" << endTime << " ";
+    gtselect << "emin=" << minEnergy << " ";
+    gtselect << "emax=" << maxEnergy << " ";
+    gtselect << "zmax=" << 100. << " ";
+    gtselect << "evclass=" << (worstEventClass == GRFermiEventClassTransient ? worstEventClass : worstEventClass+1) << " ";
+    gtselect << "convtype=" << -1 << " ";
+    gtselect << "evtable=" << "EVENTS" << " ";
+    gtselect << "chatter=" << 0 << " ";
+    cout << gtselect.str() << endl;
+    system(gtselect.str().c_str());
+    
 }

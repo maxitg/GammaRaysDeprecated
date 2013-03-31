@@ -16,7 +16,7 @@
 #include <string>
 
 #include "GRPhoton.h"
-#include "GRCelestialSpherePoint.h"
+#include "GRLocation.h"
 
 using namespace std;
 
@@ -32,14 +32,14 @@ enum GRBurstType {
 class GRBurst {
     string name;
     double time;
-    GRCelestialSpherePoint location;
+    GRLocation location;
     GRBurstType type;
     
     double startTimeLowerBound();
     double endTimeUpperBound();
     
 public:
-    GRBurst(string name, double time, float ra, float dec, GRBurstType type = GRBurstTypeUndefined) : name(name), time(time), location(GRCelestialSpherePoint(ra, dec)), type(type) {};
+    GRBurst(string name, double time, GRCoordinateSystem system, float ra, float dec, GRBurstType type = GRBurstTypeUndefined) : name(name), time(time), location(GRLocation(system, ra, dec)), type(type) {};
     
     vector <GRPhoton> photons();
 };

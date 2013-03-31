@@ -9,7 +9,7 @@
 #include "GRPhotonStorage.h"
 #include "GRFermiLAT.h"
 
-vector <GRPhoton> GRPhotonStorage::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRCelestialSpherePoint location) {
+vector <GRPhoton> GRPhotonStorage::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location) {
     GRFermiLAT fermiLAT;
     vector <GRFermiLATPhoton> fermiLATPhotons = fermiLAT.photons(startTime, endTime, minEnergy, maxEnergy, location, GRFermiEventClassTransient);
     vector <GRPhoton> result;

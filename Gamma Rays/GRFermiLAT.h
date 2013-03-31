@@ -22,7 +22,8 @@ class GRFermiLAT {
     size_t saveFermiDataServerResponce(char *ptr, size_t size, size_t memb);
     
 public:
-    vector <GRFermiLATPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRCelestialSpherePoint location, GRFermiEventClass worstEventClass);
+    void downloadPhotons(double startTime, double endTime, GRLocation location);
+    vector <GRFermiLATPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass);
 };
 
 #endif /* defined(__Gamma_Rays__GRFermiLAT__) */

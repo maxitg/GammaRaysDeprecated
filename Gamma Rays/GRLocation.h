@@ -11,17 +11,22 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
-class GRCelestialSpherePoint {
+enum GRCoordinateSystem {
+    GRCoordinateSystemJ2000 = 0,
+    GRCoordinateSystemGalactic = 1
+    };
+
+class GRLocation {
 public:
     float ra;
     float dec;
     
 public:
-    GRCelestialSpherePoint(float ra, float dec) : ra(ra), dec(dec) {};
-    
+    GRLocation(GRCoordinateSystem system, float ra, float dec);
     string description();
 };
 

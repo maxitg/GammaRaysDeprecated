@@ -12,20 +12,20 @@
 #include <iostream>
 #include <string>
 
-#include "GRCelestialSpherePoint.h"
+#include "GRLocation.h"
 
 using namespace std;
 
 class GRPhoton {
 protected:
-    GRCelestialSpherePoint location;
+    GRLocation location;
     float energy;
     double time;
     
     string energyDescription();
     
 public:
-    GRPhoton(double time, float ra, float dec, float energy) : time(time), location(GRCelestialSpherePoint(ra, dec)), energy(energy) {};
+    GRPhoton(double time, GRCoordinateSystem system, float ra, float dec, float energy) : time(time), location(GRLocation(system, ra, dec)), energy(energy) {};
     
     string description();
 };

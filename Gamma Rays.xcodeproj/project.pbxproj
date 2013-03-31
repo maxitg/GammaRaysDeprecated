@@ -12,7 +12,7 @@
 		69FF3C7316FF5A7C00BA79AB /* GRBurst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */; };
 		69FF3C7616FF5A8F00BA79AB /* GRPhoton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7416FF5A8F00BA79AB /* GRPhoton.cpp */; };
 		69FF3C7916FF5A9A00BA79AB /* GRFermiLAT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */; };
-		69FF3C7C16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7A16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp */; };
+		69FF3C7C16FF5BC600BA79AB /* GRLocation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7A16FF5BC600BA79AB /* GRLocation.cpp */; };
 		69FF3C7F16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */; };
 		69FF3C8216FF68CF00BA79AB /* GRPhotonStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C8016FF68CF00BA79AB /* GRPhotonStorage.cpp */; };
 		69FF3C8416FF7B3300BA79AB /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69FF3C8316FF7B3300BA79AB /* libcurl.dylib */; };
@@ -41,8 +41,8 @@
 		69FF3C7516FF5A8F00BA79AB /* GRPhoton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRPhoton.h; sourceTree = "<group>"; };
 		69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRFermiLAT.cpp; sourceTree = "<group>"; };
 		69FF3C7816FF5A9A00BA79AB /* GRFermiLAT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRFermiLAT.h; sourceTree = "<group>"; };
-		69FF3C7A16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRCelestialSpherePoint.cpp; sourceTree = "<group>"; };
-		69FF3C7B16FF5BC600BA79AB /* GRCelestialSpherePoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRCelestialSpherePoint.h; sourceTree = "<group>"; };
+		69FF3C7A16FF5BC600BA79AB /* GRLocation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRLocation.cpp; sourceTree = "<group>"; };
+		69FF3C7B16FF5BC600BA79AB /* GRLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRLocation.h; sourceTree = "<group>"; };
 		69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRFermiLATPhoton.cpp; sourceTree = "<group>"; };
 		69FF3C7E16FF5EDD00BA79AB /* GRFermiLATPhoton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRFermiLATPhoton.h; sourceTree = "<group>"; };
 		69FF3C8016FF68CF00BA79AB /* GRPhotonStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRPhotonStorage.cpp; sourceTree = "<group>"; };
@@ -87,8 +87,8 @@
 				69FF3C7216FF5A7C00BA79AB /* GRBurst.h */,
 				69FF3C8016FF68CF00BA79AB /* GRPhotonStorage.cpp */,
 				69FF3C8116FF68CF00BA79AB /* GRPhotonStorage.h */,
-				69FF3C7A16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp */,
-				69FF3C7B16FF5BC600BA79AB /* GRCelestialSpherePoint.h */,
+				69FF3C7A16FF5BC600BA79AB /* GRLocation.cpp */,
+				69FF3C7B16FF5BC600BA79AB /* GRLocation.h */,
 				69FF3C7416FF5A8F00BA79AB /* GRPhoton.cpp */,
 				69FF3C7516FF5A8F00BA79AB /* GRPhoton.h */,
 				69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */,
@@ -155,7 +155,7 @@
 				69FF3C7316FF5A7C00BA79AB /* GRBurst.cpp in Sources */,
 				69FF3C7616FF5A8F00BA79AB /* GRPhoton.cpp in Sources */,
 				69FF3C7916FF5A9A00BA79AB /* GRFermiLAT.cpp in Sources */,
-				69FF3C7C16FF5BC600BA79AB /* GRCelestialSpherePoint.cpp in Sources */,
+				69FF3C7C16FF5BC600BA79AB /* GRLocation.cpp in Sources */,
 				69FF3C7F16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp in Sources */,
 				69FF3C8216FF68CF00BA79AB /* GRPhotonStorage.cpp in Sources */,
 			);
@@ -256,6 +256,7 @@
 				69FF3C6A16FF59FF00BA79AB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

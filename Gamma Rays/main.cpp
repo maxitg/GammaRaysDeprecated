@@ -9,13 +9,17 @@
 #include <iostream>
 
 #include "GRBurst.h"
+#include "GRFermiLAT.h"
 
 int main(int argc, const char * argv[])
 {
-    GRBurst burst = GRBurst("GRB080916C", 243216766, 119.88, -56.59);
-    vector <GRPhoton> photons = burst.photons();
-    for (vector <GRPhoton>::iterator i = photons.begin(); i != photons.end(); i++) {
-        cout << i->description() << endl;
-    }
+    GRBurst burst = GRBurst("GRB100728095", 301976252, GRCoordinateSystemGalactic, 220.663, -19.2164);
+    
+    GRFermiLAT fermiLAT;
+    GRLocation location(GRCoordinateSystemGalactic, 220.663, -19.2164);
+    cout << location.description();
+    
+    //fermiLAT.downloadPhotons(301976252-500, 301976252+2000, location);
+    
     return 0;
 }
