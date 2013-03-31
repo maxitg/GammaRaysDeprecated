@@ -22,7 +22,15 @@ class GRFermiLAT {
     size_t saveFermiDataServerResponce(char *ptr, size_t size, size_t memb);
     string hash(double startTime, double endTime, GRLocation location);
     
+    void gtselect(string queryHash);
+    void gtmktime(string queryHash);
+    void gtltcube(string queryHash);
+    void gtpsf(string queryHash, GRFermiEventClass eventClass, GRLocation location);
+    
+    string eventClassName(GRFermiEventClass eventClass);
+    
 public:
+    void processPhotons(string queryHash, GRFermiEventClass eventClass, GRLocation location);
     string downloadPhotons(double startTime, double endTime, GRLocation location);
     vector <GRFermiLATPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass);
 };

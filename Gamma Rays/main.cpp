@@ -19,7 +19,8 @@ int main(int argc, const char * argv[])
     GRLocation location(GRCoordinateSystemGalactic, 220.663, -19.2164);
     
     fermiLAT.downloadPhotons(301976252-500, 301976252+2000, location);
-    fermiLAT.downloadPhotons(275631628-500, 275631628+2000, location);
+    string hash = fermiLAT.downloadPhotons(275631628-500, 275631628+2000, location);
+    fermiLAT.processPhotons(hash, GRFermiEventClassTransient, location);
     
     return 0;
 }

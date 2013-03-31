@@ -117,7 +117,7 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
     cout << "query hash: " << queryHash << endl;
     if (mkdir(queryHash.c_str(), S_IRWXU ^ S_IRWXG ^ S_IRWXO) == -1) {
         if (errno == EEXIST) {
-            cout << "already downloaded! exiting" << endl;
+            cout << "already downloaded!" << endl;
             return queryHash;
         }
         else {
@@ -290,7 +290,7 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
     
     ofstream eventList(queryHash + "/eventList.txt");
     for (int i = 0; i < filenames.size(); i++) {
-        if (filenames[i].find("_EV") != string::npos) eventList << filenames[i] << endl;
+        if (filenames[i].find("_EV") != string::npos) eventList << queryHash + "/" + filenames[i] << endl;
         else if (filenames[i].find("_SC") != string::npos) {
             symlink(filenames[i].c_str(), (queryHash + "/spacecraft.fits").c_str());
         }
@@ -309,22 +309,86 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
     return queryHash;
 }
 
+void GRFermiLAT::gtselect(string queryHash) {
+    ostringstream cmd;
+    cmd << fixed << "gtselect" << " ";
+    cmd << "infile=@" << queryHash << "/eventList.txt" << " ";
+    cmd << "outfile=" << queryHash << "/filtered.fits" << " ";
+    cmd << "ra=" << "INDEF" << " ";
+    cmd << "dec=" << "INDEF" << " ";
+    cmd << "rad=" << 180 << " ";
+    cmd << "tmin=" << "INDEF" << " ";
+    cmd << "tmax=" << "INDEF" << " ";
+    cmd << "emin=" << 100. << " ";
+    cmd << "emax=" << 300000. << " ";
+    cmd << "zmax=" << 100. << " ";
+    cmd << "evclass=" << 0 << " ";
+    cmd << "convtype=" << -1 << " ";
+    cmd << "evtable=" << "EVENTS" << " ";
+    cmd << "chatter=" << 0 << " ";
+    cout << cmd.str() << endl;
+    system(cmd.str().c_str());
+}
+
+void GRFermiLAT::gtmktime(string queryHash) {
+    ostringstream cmd;
+    cmd << fixed << "gtmktime" << " ";
+    cmd << "scfile=" << queryHash << "/spacecraft.fits" << " ";
+    cmd << "filter=" << "\"DATA_QUAL==1 && LAT_CONFIG==1 && ABS(ROCK_ANGLE)<52\"" << " ";
+    cmd << "roicut=" << "yes" << " ";
+    cmd << "evfile=" << queryHash << "/filtered.fits" << " ";
+    cmd << "outfile=" << queryHash << "/timed.fits" << " ";
+    cout << cmd.str() << endl;
+    system(cmd.str().c_str());
+}
+
+void GRFermiLAT::gtltcube(string queryHash) {
+    ostringstream cmd;
+    cmd << fixed << "gtltcube" << " ";
+    cmd << fixed << "evfile=" << queryHash << "/timed.fits" << " ";
+    cmd << fixed << "evtable=" << "EVENTS" << " ";
+    cmd << fixed << "scfile=" << queryHash << "/spacecraft.fits" << " ";
+    cmd << fixed << "sctable=" << "SC_DATA" << " ";
+    cmd << fixed << "outfile=" << queryHash << "/ltcube.fits" << " ";
+    cmd << fixed << "dcostheta=" << 0.025 << " ";
+    cmd << fixed << "binsz=" << 1 << " ";
+    cout << cmd.str() << endl;
+    system(cmd.str().c_str());
+}
+
+string GRFermiLAT::eventClassName(GRFermiEventClass eventClass) {
+    if (eventClass == GRFermiEventClassUltraclean) return "P7ULTRACLEAN_V6";
+    else if (eventClass == GRFermiEventClassClean) return "P7CLEAN_V6";
+    else if (eventClass == GRFermiEventClassSource) return "P7SOURCE_V6";
+    else return "P7TRANSIENT_V6";
+}
+
+void GRFermiLAT::gtpsf(string queryHash, GRFermiEventClass eventClass, GRLocation location) {
+    ostringstream cmd;
+    cmd << fixed << "gtpsf" << " ";
+    cmd << "expcube=" << queryHash << "/ltcube.fits" << " ";
+    cmd << "outfile=" << queryHash << "/psf.fits" << " ";
+    cmd << "outtable=" << "PSF" << " ";
+    cmd << "irfs=" << eventClassName(eventClass) << " ";
+    cmd << "ra=" << location.ra << " ";
+    cmd << "dec=" << location.dec << " ";
+    cmd << "emin=" << 100. << " ";
+    cmd << "emax=" << 1000000. << " ";
+    cmd << "nenergies=" << 40 << " ";
+    cmd << "thetamax=" << 30 << " ";
+    cmd << "ntheta=" << 300 << " ";
+    cmd << "chatter=" << 2 << " ";
+    cout << cmd.str() << endl;
+    system(cmd.str().c_str());
+}
+
+void GRFermiLAT::processPhotons(string queryHash, GRFermiEventClass eventClass, GRLocation location) {
+    gtselect(queryHash);
+    gtmktime(queryHash);
+    gtltcube(queryHash);
+}
+
 vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass) {
-    ostringstream gtselect;
-    gtselect << "gtselect infile=@eventList.txt outfile=dataSelected.fits " << fixed;
-    gtselect << "ra=" << location.ra << " ";
-    gtselect << "dec=" << location.dec << " ";
-    gtselect << "rad=" << "180" << " ";
-    gtselect << "tmin=" << startTime << " ";
-    gtselect << "tmax=" << endTime << " ";
-    gtselect << "emin=" << minEnergy << " ";
-    gtselect << "emax=" << maxEnergy << " ";
-    gtselect << "zmax=" << 100. << " ";
-    gtselect << "evclass=" << (worstEventClass == GRFermiEventClassTransient ? worstEventClass : worstEventClass+1) << " ";
-    gtselect << "convtype=" << -1 << " ";
-    gtselect << "evtable=" << "EVENTS" << " ";
-    gtselect << "chatter=" << 0 << " ";
-    cout << gtselect.str() << endl;
-    system(gtselect.str().c_str());
-    
+    vector <GRFermiLATPhoton> photons;
+    return photons;
 }
