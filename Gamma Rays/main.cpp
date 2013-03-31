@@ -17,9 +17,9 @@ int main(int argc, const char * argv[])
     
     GRFermiLAT fermiLAT;
     GRLocation location(GRCoordinateSystemGalactic, 220.663, -19.2164);
-    cout << location.description();
     
-    //fermiLAT.downloadPhotons(301976252-500, 301976252+2000, location);
+    fermiLAT.downloadPhotons(301976252-500, 301976252+2000, location);
+    fermiLAT.downloadPhotons(275631628-500, 275631628+2000, location);
     
     return 0;
 }

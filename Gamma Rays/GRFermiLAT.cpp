@@ -6,11 +6,26 @@
 //  Copyright (c) 2013 Maxim Piskunov. All rights reserved.
 //
 
+#include <stdio.h>
 #include <math.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+
+#ifdef __APPLE__
+#include <CommonCrypto/CommonDigest.h>
+#include <CoreFoundation/CoreFoundation.h>
+#include <Security/Security.h>
+#include <Security/SecTransform.h>
+#include <Security/SecEncodeTransform.h>
+#else
+#include <openssl/sha.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#endif
 
 #include "GRFermiLAT.h"
 #include <curl/curl.h>
@@ -30,7 +45,86 @@ size_t GRFermiLAT::saveFermiDataServerResponceToFile(char *ptr, size_t size, siz
     return written;
 }
 
-void GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation location) {
+struct numbers {
+    double startTime;
+    double endTime;
+    float ra;
+    float dec;
+};
+
+string GRFermiLAT::hash(double startTime, double endTime, GRLocation location) {
+    double parameters[4];
+    parameters[0] = startTime;
+    parameters[1] = endTime;
+    parameters[2] = location.ra;
+    parameters[3] = location.dec;
+    int parametersSize = 4*sizeof(double);
+    
+    string result;
+    
+#ifdef __APPLE__
+    
+    CC_SHA256_CTX context;
+    unsigned char md[CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256_Init(&context);
+    CC_SHA256_Update(&context, (unsigned char*)parameters, parametersSize);
+    CC_SHA256_Final(md, &context);
+    
+    CFDataRef dataToEncode = CFDataCreate(kCFAllocatorDefault, md, CC_SHA256_DIGEST_LENGTH);
+    CFErrorRef error = NULL;
+    SecTransformRef encodingRef = SecEncodeTransformCreate(kSecBase64Encoding, &error);
+    SecTransformSetAttribute(encodingRef, kSecTransformInputAttributeName, dataToEncode, &error);
+    CFDataRef resultData = (CFDataRef)SecTransformExecute(encodingRef, &error);
+    CFStringRef str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, resultData, kCFStringEncodingUTF8);
+    
+    char base64Pointer[256];
+    CFStringGetCString(str, base64Pointer, 256, kCFStringEncodingUTF8);
+    
+    result = string(base64Pointer);
+    
+#else
+    
+    SHA256_CTX context;
+    unsigned char md[SHA256_DIGEST_LENGTH];
+    SHA256_Init(&context);
+    SHA256_Update(&context, (unsigned char*)parameters, parametersSize);
+    SHA256_Final(md, &context);
+    
+    BIO * mem = BIO_new(BIO_s_mem());
+    
+    BIO * b64 = BIO_new(BIO_f_base64());
+    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
+    mem = BIO_push(b64, mem);
+    
+    BIO_write(mem, md, SHA256_DIGEST_LENGTH);
+    BIO_flush(mem);
+    
+    char * base64Pointer;
+    long base64Length = BIO_get_mem_data(mem, &base64Pointer);
+    
+    result = string(base64Pointer, base64Length);
+    
+    BIO_free_all(mem);
+    
+#endif
+    
+    return result;
+}
+
+string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation location) {
+    
+    string queryHash = hash(startTime, endTime, location);
+    cout << "query hash: " << queryHash << endl;
+    if (mkdir(queryHash.c_str(), S_IRWXU ^ S_IRWXG ^ S_IRWXO) == -1) {
+        if (errno == EEXIST) {
+            cout << "already downloaded! exiting" << endl;
+            return queryHash;
+        }
+        else {
+            perror(queryHash.c_str());
+            return "";
+        }
+    }
     
     /*
         Input form to send out
@@ -83,7 +177,7 @@ void GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation lo
     curl_formadd(&formpost,
                  &lastptr,
                  CURLFORM_COPYNAME, "shapefield",
-                 CURLFORM_COPYCONTENTS, "180",
+                 CURLFORM_COPYCONTENTS, "60",
                  CURLFORM_END);
     
     curl_formadd(&formpost,
@@ -168,7 +262,7 @@ void GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation lo
                 cerr << "--- start of responce ---" << endl;
                 cerr << fermiDataServerResponce << endl;
                 cerr << "--- end of responce ---" << endl;
-                return;
+                return "";
             }
         }
         
@@ -184,7 +278,7 @@ void GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation lo
     
     for (int i = 0; i < resultURLs.size(); i++) {
         filenames[i] = resultURLs[i].substr(resultURLs[i].rfind("/")+1);
-        FILE *fits = fopen(filenames[i].c_str(), "wb");
+        FILE *fits = fopen((queryHash + "/" + filenames[i]).c_str(), "wb");
         curl = curl_easy_init();
         curl_easy_setopt(curl, CURLOPT_URL, resultURLs[i].c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fits);
@@ -194,9 +288,15 @@ void GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation lo
         fclose(fits);
     }
     
-    ofstream eventList("eventList.txt");
-    for (int i = 0; i < resultURLs.size(); i++) {
-        eventList << resultURLs[i] << endl;
+    ofstream eventList(queryHash + "/eventList.txt");
+    for (int i = 0; i < filenames.size(); i++) {
+        if (filenames[i].find("_EV") != string::npos) eventList << filenames[i] << endl;
+        else if (filenames[i].find("_SC") != string::npos) {
+            symlink(filenames[i].c_str(), (queryHash + "/spacecraft.fits").c_str());
+        }
+        else {
+            cerr << "unknown file type: " << filenames[i] << endl;
+        }
     }
     eventList.close();
     
@@ -205,6 +305,8 @@ void GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation lo
     for (int i = 0; i < resultURLs.size(); i++) {
         cout << resultURLs[i] << endl;
     }
+    
+    return queryHash;
 }
 
 vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass) {

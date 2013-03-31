@@ -20,9 +20,10 @@ class GRFermiLAT {
     static size_t handleFermiDataServerResponce(char *ptr, size_t size, size_t nmemb, GRFermiLAT *me);
     static size_t saveFermiDataServerResponceToFile(char *ptr, size_t size, size_t nmemv, FILE *stream);
     size_t saveFermiDataServerResponce(char *ptr, size_t size, size_t memb);
+    string hash(double startTime, double endTime, GRLocation location);
     
 public:
-    void downloadPhotons(double startTime, double endTime, GRLocation location);
+    string downloadPhotons(double startTime, double endTime, GRLocation location);
     vector <GRFermiLATPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass);
 };
 
