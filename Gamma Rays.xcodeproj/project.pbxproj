@@ -10,6 +10,7 @@
 		69A656CD170805340070E84C /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CC170805340070E84C /* libcrypto.dylib */; };
 		69A656CF17080D5D0070E84C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CE17080D5C0070E84C /* Security.framework */; };
 		69A656D117080D6B0070E84C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656D017080D6B0070E84C /* Foundation.framework */; };
+		69A656DA170839BD0070E84C /* GRPsf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69A656D8170839BD0070E84C /* GRPsf.cpp */; };
 		69FF3C6316FF59FF00BA79AB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C6216FF59FF00BA79AB /* main.cpp */; };
 		69FF3C6516FF59FF00BA79AB /* Gamma_Rays.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */; };
 		69FF3C7316FF5A7C00BA79AB /* GRBurst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */; };
@@ -38,6 +39,8 @@
 		69A656CC170805340070E84C /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		69A656CE17080D5C0070E84C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		69A656D017080D6B0070E84C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		69A656D8170839BD0070E84C /* GRPsf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRPsf.cpp; sourceTree = "<group>"; };
+		69A656D9170839BD0070E84C /* GRPsf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRPsf.h; sourceTree = "<group>"; };
 		69FF3C5F16FF59FF00BA79AB /* Gamma Rays */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Gamma Rays"; sourceTree = BUILT_PRODUCTS_DIR; };
 		69FF3C6216FF59FF00BA79AB /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = Gamma_Rays.1; sourceTree = "<group>"; };
@@ -107,6 +110,8 @@
 				69FF3C7E16FF5EDD00BA79AB /* GRFermiLATPhoton.h */,
 				69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */,
 				69FF3C7816FF5A9A00BA79AB /* GRFermiLAT.h */,
+				69A656D8170839BD0070E84C /* GRPsf.cpp */,
+				69A656D9170839BD0070E84C /* GRPsf.h */,
 				69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */,
 			);
 			path = "Gamma Rays";
@@ -170,6 +175,7 @@
 				69FF3C7C16FF5BC600BA79AB /* GRLocation.cpp in Sources */,
 				69FF3C7F16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp in Sources */,
 				69FF3C8216FF68CF00BA79AB /* GRPhotonStorage.cpp in Sources */,
+				69A656DA170839BD0070E84C /* GRPsf.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

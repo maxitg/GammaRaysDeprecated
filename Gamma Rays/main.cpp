@@ -20,7 +20,8 @@ int main(int argc, const char * argv[])
     
     fermiLAT.downloadPhotons(301976252-500, 301976252+2000, location);
     string hash = fermiLAT.downloadPhotons(275631628-500, 275631628+2000, location);
-    fermiLAT.processPhotons(hash, GRFermiEventClassTransient, location);
+    fermiLAT.processPhotons(hash);
+    fermiLAT.gtpsf(hash, location, GRFermiEventClassTransient, GRFermiConversionTypeFront);
     
     return 0;
 }

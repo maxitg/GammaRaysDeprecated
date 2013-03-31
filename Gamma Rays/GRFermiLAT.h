@@ -25,12 +25,15 @@ class GRFermiLAT {
     void gtselect(string queryHash);
     void gtmktime(string queryHash);
     void gtltcube(string queryHash);
-    void gtpsf(string queryHash, GRFermiEventClass eventClass, GRLocation location);
     
-    string eventClassName(GRFermiEventClass eventClass);
+    string instrumentResponceFunctionName(GRFermiEventClass eventClass, GRFermiConversionType conversionType);
+    
+    bool fileExists(string queryHash, string fileName);
     
 public:
-    void processPhotons(string queryHash, GRFermiEventClass eventClass, GRLocation location);
+    void gtpsf(string queryHash, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType);
+    
+    void processPhotons(string queryHash);
     string downloadPhotons(double startTime, double endTime, GRLocation location);
     vector <GRFermiLATPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass);
 };

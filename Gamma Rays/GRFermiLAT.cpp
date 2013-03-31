@@ -309,7 +309,14 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
     return queryHash;
 }
 
+bool GRFermiLAT::fileExists(string queryHash, string fileName) {
+    struct stat buf;
+    if (stat((queryHash + "/" + fileName).c_str(), &buf) == 0) return true;
+    else return false;
+}
+
 void GRFermiLAT::gtselect(string queryHash) {
+    if (fileExists(queryHash, "filtered.fits")) return;
     ostringstream cmd;
     cmd << fixed << "gtselect" << " ";
     cmd << "infile=@" << queryHash << "/eventList.txt" << " ";
@@ -331,6 +338,7 @@ void GRFermiLAT::gtselect(string queryHash) {
 }
 
 void GRFermiLAT::gtmktime(string queryHash) {
+    if (fileExists(queryHash, "timed.fits")) return;
     ostringstream cmd;
     cmd << fixed << "gtmktime" << " ";
     cmd << "scfile=" << queryHash << "/spacecraft.fits" << " ";
@@ -343,6 +351,7 @@ void GRFermiLAT::gtmktime(string queryHash) {
 }
 
 void GRFermiLAT::gtltcube(string queryHash) {
+    if (fileExists(queryHash, "ltcube.fits")) return;
     ostringstream cmd;
     cmd << fixed << "gtltcube" << " ";
     cmd << fixed << "evfile=" << queryHash << "/timed.fits" << " ";
@@ -356,20 +365,31 @@ void GRFermiLAT::gtltcube(string queryHash) {
     system(cmd.str().c_str());
 }
 
-string GRFermiLAT::eventClassName(GRFermiEventClass eventClass) {
-    if (eventClass == GRFermiEventClassUltraclean) return "P7ULTRACLEAN_V6";
-    else if (eventClass == GRFermiEventClassClean) return "P7CLEAN_V6";
-    else if (eventClass == GRFermiEventClassSource) return "P7SOURCE_V6";
-    else return "P7TRANSIENT_V6";
+string GRFermiLAT::instrumentResponceFunctionName(GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
+    string result = "P7";
+    
+    if (eventClass == GRFermiEventClassUltraclean) result += "ULTRACLEAN";
+    else if (eventClass == GRFermiEventClassClean) result += "CLEAN";
+    else if (eventClass == GRFermiEventClassSource) result += "SOURCE";
+    else result += "TRANSIENT";
+    
+    result += "_V6::";
+    
+    if (conversionType == GRFermiConversionTypeBack) result += "BACK";
+    else result += "FRONT";
+    
+    return result;
 }
 
-void GRFermiLAT::gtpsf(string queryHash, GRFermiEventClass eventClass, GRLocation location) {
+void GRFermiLAT::gtpsf(string queryHash, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
+    string psfFilename = "psf_" + instrumentResponceFunctionName(eventClass, conversionType) + ".fits";
+    if (fileExists(queryHash, psfFilename)) return;
     ostringstream cmd;
     cmd << fixed << "gtpsf" << " ";
     cmd << "expcube=" << queryHash << "/ltcube.fits" << " ";
-    cmd << "outfile=" << queryHash << "/psf.fits" << " ";
+    cmd << "outfile=" << queryHash << "/" << psfFilename << " ";
     cmd << "outtable=" << "PSF" << " ";
-    cmd << "irfs=" << eventClassName(eventClass) << " ";
+    cmd << "irfs=" << instrumentResponceFunctionName(eventClass, conversionType) << " ";
     cmd << "ra=" << location.ra << " ";
     cmd << "dec=" << location.dec << " ";
     cmd << "emin=" << 100. << " ";
@@ -382,7 +402,7 @@ void GRFermiLAT::gtpsf(string queryHash, GRFermiEventClass eventClass, GRLocatio
     system(cmd.str().c_str());
 }
 
-void GRFermiLAT::processPhotons(string queryHash, GRFermiEventClass eventClass, GRLocation location) {
+void GRFermiLAT::processPhotons(string queryHash) {
     gtselect(queryHash);
     gtmktime(queryHash);
     gtltcube(queryHash);
