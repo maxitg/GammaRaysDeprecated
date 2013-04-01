@@ -27,6 +27,7 @@ public:
     
 public:
     GRLocation(GRCoordinateSystem system, float ra, float dec);
+    GRLocation();
     string description();
 };
 

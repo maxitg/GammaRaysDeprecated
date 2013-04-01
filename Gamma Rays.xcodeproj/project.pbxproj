@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6913421B1709EA8000D8C601 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6913421A1709EA8000D8C601 /* main.cpp */; };
+		6913421D1709EA8000D8C601 /* grspread.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6913421C1709EA8000D8C601 /* grspread.1 */; };
+		691342211709F2C300D8C601 /* GRPsf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69A656D8170839BD0070E84C /* GRPsf.cpp */; };
+		691342221709F33000D8C601 /* GRFermiLAT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */; };
+		691342231709F34000D8C601 /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69FF3C8316FF7B3300BA79AB /* libcurl.dylib */; };
+		691342241709F35500D8C601 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656D017080D6B0070E84C /* Foundation.framework */; };
+		691342251709F35900D8C601 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CE17080D5C0070E84C /* Security.framework */; };
+		691342261709F36500D8C601 /* GRLocation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7A16FF5BC600BA79AB /* GRLocation.cpp */; };
+		691342271709F38A00D8C601 /* libcfitsio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 698CAAF3170891BB008E4415 /* libcfitsio.a */; };
 		698CAAF4170891BB008E4415 /* libcfitsio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 698CAAF3170891BB008E4415 /* libcfitsio.a */; };
 		69A656CD170805340070E84C /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CC170805340070E84C /* libcrypto.dylib */; };
 		69A656CF17080D5D0070E84C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CE17080D5C0070E84C /* Security.framework */; };
@@ -24,6 +33,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		691342161709EA8000D8C601 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				6913421D1709EA8000D8C601 /* grspread.1 in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		69FF3C5D16FF59FF00BA79AB /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -37,6 +56,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		691342181709EA8000D8C601 /* grspread */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = grspread; sourceTree = BUILT_PRODUCTS_DIR; };
+		6913421A1709EA8000D8C601 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		6913421C1709EA8000D8C601 /* grspread.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = grspread.1; sourceTree = "<group>"; };
 		698CAAF3170891BB008E4415 /* libcfitsio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcfitsio.a; path = ../../../../../usr/local/lib/libcfitsio.a; sourceTree = "<group>"; };
 		69A656CC170805340070E84C /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		69A656CE17080D5C0070E84C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -62,6 +84,17 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		691342151709EA8000D8C601 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				691342271709F38A00D8C601 /* libcfitsio.a in Frameworks */,
+				691342251709F35900D8C601 /* Security.framework in Frameworks */,
+				691342241709F35500D8C601 /* Foundation.framework in Frameworks */,
+				691342231709F34000D8C601 /* libcurl.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		69FF3C5C16FF59FF00BA79AB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -77,6 +110,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		691342191709EA8000D8C601 /* grspread */ = {
+			isa = PBXGroup;
+			children = (
+				6913421A1709EA8000D8C601 /* main.cpp */,
+				6913421C1709EA8000D8C601 /* grspread.1 */,
+			);
+			path = grspread;
+			sourceTree = "<group>";
+		};
 		69FF3C5616FF59FF00BA79AB = {
 			isa = PBXGroup;
 			children = (
@@ -86,6 +128,7 @@
 				69A656CC170805340070E84C /* libcrypto.dylib */,
 				69FF3C8316FF7B3300BA79AB /* libcurl.dylib */,
 				69FF3C6116FF59FF00BA79AB /* Gamma Rays */,
+				691342191709EA8000D8C601 /* grspread */,
 				69FF3C6016FF59FF00BA79AB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -94,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				69FF3C5F16FF59FF00BA79AB /* Gamma Rays */,
+				691342181709EA8000D8C601 /* grspread */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -124,6 +168,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		691342171709EA8000D8C601 /* grspread */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6913421E1709EA8000D8C601 /* Build configuration list for PBXNativeTarget "grspread" */;
+			buildPhases = (
+				691342141709EA8000D8C601 /* Sources */,
+				691342151709EA8000D8C601 /* Frameworks */,
+				691342161709EA8000D8C601 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = grspread;
+			productName = grspread;
+			productReference = 691342181709EA8000D8C601 /* grspread */;
+			productType = "com.apple.product-type.tool";
+		};
 		69FF3C5E16FF59FF00BA79AB /* Gamma Rays */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 69FF3C6816FF59FF00BA79AB /* Build configuration list for PBXNativeTarget "Gamma Rays" */;
@@ -163,11 +224,23 @@
 			projectRoot = "";
 			targets = (
 				69FF3C5E16FF59FF00BA79AB /* Gamma Rays */,
+				691342171709EA8000D8C601 /* grspread */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		691342141709EA8000D8C601 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				691342261709F36500D8C601 /* GRLocation.cpp in Sources */,
+				691342221709F33000D8C601 /* GRFermiLAT.cpp in Sources */,
+				691342211709F2C300D8C601 /* GRPsf.cpp in Sources */,
+				6913421B1709EA8000D8C601 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		69FF3C5B16FF59FF00BA79AB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -186,6 +259,20 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		6913421F1709EA8000D8C601 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		691342201709EA8000D8C601 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		69FF3C6616FF59FF00BA79AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -213,6 +300,8 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/include/;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib/;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -240,6 +329,8 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/include/;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib/;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				SDKROOT = macosx;
 			};
@@ -284,6 +375,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		6913421E1709EA8000D8C601 /* Build configuration list for PBXNativeTarget "grspread" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6913421F1709EA8000D8C601 /* Debug */,
+				691342201709EA8000D8C601 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		69FF3C5A16FF59FF00BA79AB /* Build configuration list for PBXProject "Gamma Rays" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

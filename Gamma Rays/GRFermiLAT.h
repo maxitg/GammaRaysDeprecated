@@ -21,6 +21,7 @@ class GRFermiLAT {
     static size_t handleFermiDataServerResponce(char *ptr, size_t size, size_t nmemb, GRFermiLAT *me);
     static size_t saveFermiDataServerResponceToFile(char *ptr, size_t size, size_t nmemv, FILE *stream);
     size_t saveFermiDataServerResponce(char *ptr, size_t size, size_t memb);
+    char digitHex(int digit);
     string hash(double startTime, double endTime, GRLocation location);
     
     string gtselect(string queryHash);

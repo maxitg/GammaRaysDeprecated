@@ -12,13 +12,17 @@
 #include "GRFermiLAT.h"
 
 int main(int argc, const char * argv[])
+
 {
     GRBurst burst = GRBurst("GRB100728095", 301976252, GRCoordinateSystemGalactic, 220.663f, -19.2164f);
     
     GRFermiLAT fermiLAT;
     GRLocation location(GRCoordinateSystemGalactic, 220.663f, -19.2164f);
     
-    GRPsf psf = fermiLAT.psf(275631628-500, 275631628+2000, location, GRFermiEventClassTransient, GRFermiConversionTypeBack);
+    cout << location.ra << " " << location.dec << endl;
+    
+    GRPsf psf = fermiLAT.psf(275631628-500, 275631628+2000, location, GRFermiEventClassSource, GRFermiConversionTypeFront);
+    cout << psf.spread(100.f, 0.95) << endl;
     
     return 0;
 }

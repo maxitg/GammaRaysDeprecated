@@ -32,6 +32,11 @@ GRLocation::GRLocation(GRCoordinateSystem system, float angle0, float angle1) {
     }
 }
 
+GRLocation::GRLocation() {
+    ra = 0.;
+    dec = 0.;
+}
+
 string GRLocation::description() {
     ostringstream result;
     result << "(" << ra << " ra, " << dec << " dec)";

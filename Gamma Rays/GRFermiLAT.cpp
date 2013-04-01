@@ -55,6 +55,11 @@ struct numbers {
     float dec;
 };
 
+char GRFermiLAT::digitHex(int digit) {
+    if (digit < 10) return '0'+digit;
+    else return 'a'+digit-10;
+}
+
 string GRFermiLAT::hash(double startTime, double endTime, GRLocation location) {
     double parameters[4];
     parameters[0] = startTime;
@@ -65,14 +70,18 @@ string GRFermiLAT::hash(double startTime, double endTime, GRLocation location) {
     
     string result;
     
+    int digestLength;
+    
 #ifdef __APPLE__
     
+    digestLength = CC_SHA256_DIGEST_LENGTH;
     CC_SHA256_CTX context;
     unsigned char md[CC_SHA256_DIGEST_LENGTH];
     CC_SHA256_Init(&context);
     CC_SHA256_Update(&context, (unsigned char*)parameters, parametersSize);
     CC_SHA256_Final(md, &context);
     
+    /*
     CFDataRef dataToEncode = CFDataCreate(kCFAllocatorDefault, md, CC_SHA256_DIGEST_LENGTH);
     CFErrorRef error = NULL;
     SecTransformRef encodingRef = SecEncodeTransformCreate(kSecBase64Encoding, &error);
@@ -84,15 +93,18 @@ string GRFermiLAT::hash(double startTime, double endTime, GRLocation location) {
     CFStringGetCString(str, base64Pointer, 256, kCFStringEncodingUTF8);
     
     result = string(base64Pointer);
+    */
     
 #else
     
+    digestLength = SHA256_DIGEST_LENGTH;
     SHA256_CTX context;
     unsigned char md[SHA256_DIGEST_LENGTH];
     SHA256_Init(&context);
     SHA256_Update(&context, (unsigned char*)parameters, parametersSize);
     SHA256_Final(md, &context);
     
+    /*
     BIO * mem = BIO_new(BIO_s_mem());
     
     BIO * b64 = BIO_new(BIO_f_base64());
@@ -108,8 +120,16 @@ string GRFermiLAT::hash(double startTime, double endTime, GRLocation location) {
     result = string(base64Pointer, base64Length);
     
     BIO_free_all(mem);
+    */
     
 #endif
+    
+    result.reserve(digestLength*2);
+    for (int i = 0; i < digestLength; i++) {
+        unsigned char currentChar = md[i];
+        result.push_back(digitHex(currentChar/16));
+        result.push_back(digitHex(currentChar%16));
+    }
     
     return result;
 }
