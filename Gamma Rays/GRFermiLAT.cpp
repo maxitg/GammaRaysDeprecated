@@ -400,7 +400,7 @@ string GRFermiLAT::gtpsf(string queryHash, GRLocation location, GRFermiEventClas
     cmd << "dec=" << location.dec << " ";
     cmd << "emin=" << 100. << " ";
     cmd << "emax=" << 1000000. << " ";
-    cmd << "nenergies=" << 40 << " ";
+    cmd << "nenergies=" << 41 << " ";
     cmd << "thetamax=" << 30 << " ";
     cmd << "ntheta=" << 300 << " ";
     cmd << "chatter=" << 2 << " ";

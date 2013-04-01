@@ -18,7 +18,7 @@ int main(int argc, const char * argv[])
     GRFermiLAT fermiLAT;
     GRLocation location(GRCoordinateSystemGalactic, 220.663f, -19.2164f);
     
-    fermiLAT.psf(275631628-500, 275631628+2000, location, GRFermiEventClassTransient, GRFermiConversionTypeBack);
+    GRPsf psf = fermiLAT.psf(275631628-500, 275631628+2000, location, GRFermiEventClassTransient, GRFermiConversionTypeBack);
     
     return 0;
 }
