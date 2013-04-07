@@ -10,6 +10,7 @@
 
 #include "GRBurst.h"
 #include "GRPhotonStorage.h"
+#include "GRDistribution.h"
 
 double GRBurst::startTimeLowerBound() {
     return time + GRBURST_START_TIME_LOWER_BOUND_OFFSET;
@@ -20,9 +21,13 @@ double GRBurst::endTimeUpperBound() {
 }
 
 vector <GRPhoton> GRBurst::photons() {
-    GRPhotonStorage *storage = NULL;
-    storage->getInstance();
-    return storage->photons(startTimeLowerBound(), endTimeUpperBound(), 0, INFINITY, location);
+    if (!photonsRetrieved) {
+        GRPhotonStorage *storage = NULL;
+        storage->getInstance();
+        photons_ = storage->photons(startTimeLowerBound(), endTimeUpperBound(), 0, INFINITY, location);
+        photonsRetrieved = true;
+    }
+    return photons_;
 }
 
 double GRBurst::passTimeOfPhotonsFraction(float fraction) {
@@ -31,4 +36,21 @@ double GRBurst::passTimeOfPhotonsFraction(float fraction) {
     int index = fraction * burstPhotons.size() - 1;
     if (index == -1) return -INFINITY;
     else return burstPhotons[index].time;
+}
+
+float GRBurst::gevTransformHypothesisProbability(double shift, double lengthening) {
+    vector <GRPhoton> allPhotons = photons();
+    vector <double> mevTimes;
+    vector <double> gevTimes;
+    
+    double startTime = passTimeOfPhotonsFraction(START_TIME_FRACTION);
+    
+    for (int i = 0; i < allPhotons.size(); i++) {
+        if (allPhotons[i].energy > 1000) gevTimes.push_back(allPhotons[i].time - startTime);
+        else mevTimes.push_back(allPhotons[i].time - startTime);
+    }
+    
+    GRDistribution mevDistribution(mevTimes);
+    GRDistribution gevDistribution(gevTimes);
+    return mevDistribution.kolmogorovSmirnovTest(gevDistribution, shift, lengthening);
 }

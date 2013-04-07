@@ -17,6 +17,7 @@
 		691342261709F36500D8C601 /* GRLocation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7A16FF5BC600BA79AB /* GRLocation.cpp */; };
 		691342271709F38A00D8C601 /* libcfitsio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 698CAAF3170891BB008E4415 /* libcfitsio.a */; };
 		698CAAF4170891BB008E4415 /* libcfitsio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 698CAAF3170891BB008E4415 /* libcfitsio.a */; };
+		69A0552417115E6D006A9D69 /* GRDistribution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69A0552217115E6D006A9D69 /* GRDistribution.cpp */; };
 		69A656CD170805340070E84C /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CC170805340070E84C /* libcrypto.dylib */; };
 		69A656CF17080D5D0070E84C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CE17080D5C0070E84C /* Security.framework */; };
 		69A656D117080D6B0070E84C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656D017080D6B0070E84C /* Foundation.framework */; };
@@ -60,6 +61,8 @@
 		6913421A1709EA8000D8C601 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		6913421C1709EA8000D8C601 /* grspread.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = grspread.1; sourceTree = "<group>"; };
 		698CAAF3170891BB008E4415 /* libcfitsio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcfitsio.a; path = ../../../../../usr/local/lib/libcfitsio.a; sourceTree = "<group>"; };
+		69A0552217115E6D006A9D69 /* GRDistribution.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRDistribution.cpp; sourceTree = "<group>"; };
+		69A0552317115E6D006A9D69 /* GRDistribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRDistribution.h; sourceTree = "<group>"; };
 		69A656CC170805340070E84C /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		69A656CE17080D5C0070E84C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		69A656D017080D6B0070E84C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -146,6 +149,8 @@
 			isa = PBXGroup;
 			children = (
 				69FF3C6216FF59FF00BA79AB /* main.cpp */,
+				69A0552217115E6D006A9D69 /* GRDistribution.cpp */,
+				69A0552317115E6D006A9D69 /* GRDistribution.h */,
 				69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */,
 				69FF3C7216FF5A7C00BA79AB /* GRBurst.h */,
 				69FF3C8016FF68CF00BA79AB /* GRPhotonStorage.cpp */,
@@ -253,6 +258,7 @@
 				69FF3C7F16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp in Sources */,
 				69FF3C8216FF68CF00BA79AB /* GRPhotonStorage.cpp in Sources */,
 				69A656DA170839BD0070E84C /* GRPsf.cpp in Sources */,
+				69A0552417115E6D006A9D69 /* GRDistribution.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,6 +388,7 @@
 				691342201709EA8000D8C601 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		69FF3C5A16FF59FF00BA79AB /* Build configuration list for PBXProject "Gamma Rays" */ = {
 			isa = XCConfigurationList;

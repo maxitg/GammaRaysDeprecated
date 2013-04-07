@@ -25,11 +25,7 @@ int main(int argc, const char * argv[])
     cout << "0.05 event time: " << fixed << burst.passTimeOfPhotonsFraction(0.05) << endl;
     cout << "official MET is: " << 275631628 << endl;
     
-    ofstream data("data");
-    for (int i = 0; i < photons.size(); i++) {
-        data << fixed << photons[i].time << " " << i << endl;
-    }
-    data.close();
+    cout << burst.gevTransformHypothesisProbability(0, 0.6) << endl;
     
     return 0;
 }
