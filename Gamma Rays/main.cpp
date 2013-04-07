@@ -15,23 +15,21 @@
 int main(int argc, const char * argv[])
 
 {
-    GRBurst burst = GRBurst("GRB100728095", 301976252, GRCoordinateSystemGalactic, 220.663f, -19.2164f);
-    
-    GRFermiLAT fermiLAT;
-    GRLocation location(GRCoordinateSystemGalactic, 220.663f, -19.2164f);
-    
-    cout << location.ra << " " << location.dec << endl;
-    
-    GRPsf psf = fermiLAT.psf(275631628-500, 275631628+2000, location, GRFermiEventClassSource, GRFermiConversionTypeFront);
-    cout << psf.spread(100.f, 0.95) << endl;
-    
-    GRPhotonStorage *storage;
-    storage->getInstance();
-    vector <GRPhoton> photons = storage->photons(275631628-500, 275631628+2000, 0, 100000, location);
+    GRBurst burst = GRBurst("GRB090926A", 275631628, GRCoordinateSystemJ2000, 353.56f, -66.34f);
+    vector <GRPhoton> photons = burst.photons();
     
     for (int i = 0; i < photons.size(); i++) {
         cout << i+1 << ": " << photons[i].description() << endl;
     }
+    
+    cout << "0.05 event time: " << fixed << burst.passTimeOfPhotonsFraction(0.05) << endl;
+    cout << "official MET is: " << 275631628 << endl;
+    
+    ofstream data("data");
+    for (int i = 0; i < photons.size(); i++) {
+        data << fixed << photons[i].time << " " << i << endl;
+    }
+    data.close();
     
     return 0;
 }

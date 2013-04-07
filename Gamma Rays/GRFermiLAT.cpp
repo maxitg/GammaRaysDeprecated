@@ -17,6 +17,7 @@
 #include <sstream>
 #include <fstream>
 #include <algorithm>
+#include <map>
 
 #ifdef __APPLE__
 #include <CommonCrypto/CommonDigest.h>
@@ -502,7 +503,23 @@ vector<GRFermiLATPhoton> GRFermiLAT::psfUnfilteredPhotons(double startTime, doub
     return photons;
 }
 
-vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass) {
+vector<GRPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass, float confidence) {
+    vector <vector <GRPsf> > psfs;
+    psfs.resize(GRFermiEventClassesCount);
+    for (int i = 0; i < psfs.size(); i++) psfs[i].reserve(GRFermiConversionTypesCount);
+    for (int i = 0; i < GRFermiEventClassesCount; i++) {
+        for (int j = 0; j < GRFermiConversionTypesCount; j++) {
+            psfs[i].push_back(psf(startTime, endTime, location, GRFermiEventClasses[i], GRFermiConversionTypes[j]));
+        }
+    }
     vector <GRFermiLATPhoton> photons = psfUnfilteredPhotons(startTime, endTime, location);
-    return photons;
+    
+    vector <GRPhoton> filteredPhotons;
+    for (int i = 0; i < photons.size(); i++) {
+        if (photons[i].eventClass < worstEventClass) continue;
+        if (photons[i].location.separation(location) > psfs[photons[i].eventClass][photons[i].conversionType].spread(photons[i].energy, confidence)) continue;
+        filteredPhotons.push_back(GRPhoton(photons[i].time, photons[i].location, photons[i].energy));
+    }
+
+    return filteredPhotons;
 }

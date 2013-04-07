@@ -17,15 +17,19 @@
 using namespace std;
 
 class GRPhoton {
-protected:
+public:
     GRLocation location;
     float energy;
     double time;
-    
+
+protected:
     string energyDescription();
     
 public:
+    GRPhoton(double time, GRLocation location, float energy) : time(time), location(location), energy(energy) {};
     GRPhoton(double time, GRCoordinateSystem system, float ra, float dec, float energy) : time(time), location(GRLocation(system, ra, dec)), energy(energy) {};
+    
+    bool operator<(GRPhoton right) const;
     
     string description();
 };

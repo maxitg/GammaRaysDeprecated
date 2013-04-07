@@ -37,6 +37,20 @@ GRLocation::GRLocation() {
     dec = 0.;
 }
 
+float GRLocation::separation(GRLocation location) {
+    double ra1Rad = ra * M_PI / 180.;
+    double dec1Rad = dec * M_PI / 180.;
+    double ra2Rad = location.ra * M_PI / 180.;
+    double dec2Rad = location.dec * M_PI / 180.;
+    double raDiff = ra1Rad - ra2Rad;
+    if (raDiff < 0) raDiff = -raDiff;
+    double decDiff = dec1Rad - dec2Rad;
+    if (decDiff < 0) decDiff = -decDiff;
+    
+    double sep = atan2(sqrt(pow(cos(dec2Rad)*sin(raDiff), 2.) + pow(cos(dec1Rad)*sin(dec2Rad) - sin(dec1Rad)*cos(dec2Rad)*cos(raDiff), 2.)), sin(dec1Rad)*sin(dec2Rad) + cos(dec1Rad)*cos(dec2Rad)*cos(raDiff));
+    return sep * 180. / M_PI;
+}
+
 string GRLocation::description() {
     ostringstream result;
     result << "(" << ra << " ra, " << dec << " dec)";

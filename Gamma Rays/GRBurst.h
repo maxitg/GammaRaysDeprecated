@@ -41,6 +41,8 @@ class GRBurst {
 public:
     GRBurst(string name, double time, GRCoordinateSystem system, float ra, float dec, GRBurstType type = GRBurstTypeUndefined) : name(name), time(time), location(GRLocation(system, ra, dec)), type(type) {};
     
+    double passTimeOfPhotonsFraction(float fraction);
+    
     vector <GRPhoton> photons();
 };
 

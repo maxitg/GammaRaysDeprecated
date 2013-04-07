@@ -26,7 +26,15 @@ enum GRFermiEventClass {
     GRFermiEventClassUltraclean = 3
     };
 
+const int GRFermiConversionTypesCount = 2;
+const int GRFermiEventClassesCount = 4;
+
+const GRFermiConversionType GRFermiConversionTypes[] = {GRFermiConversionTypeFront, GRFermiConversionTypeBack};
+const GRFermiEventClass GRFermiEventClasses[] = {GRFermiEventClassTransient, GRFermiEventClassSource, GRFermiEventClassClean, GRFermiEventClassUltraclean};
+
 class GRFermiLATPhoton : public GRPhoton {
+    friend class GRFermiLAT;
+    
     GRFermiConversionType conversionType;
     GRFermiEventClass eventClass;
     

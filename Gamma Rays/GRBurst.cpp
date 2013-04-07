@@ -24,3 +24,11 @@ vector <GRPhoton> GRBurst::photons() {
     storage->getInstance();
     return storage->photons(startTimeLowerBound(), endTimeUpperBound(), 0, INFINITY, location);
 }
+
+double GRBurst::passTimeOfPhotonsFraction(float fraction) {
+    vector <GRPhoton> burstPhotons = photons();
+    
+    int index = fraction * burstPhotons.size() - 1;
+    if (index == -1) return -INFINITY;
+    else return burstPhotons[index].time;
+}

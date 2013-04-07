@@ -11,11 +11,7 @@
 
 vector <GRPhoton> GRPhotonStorage::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location) {
     GRFermiLAT fermiLAT;
-    vector <GRFermiLATPhoton> fermiLATPhotons = fermiLAT.photons(startTime, endTime, minEnergy, maxEnergy, location, GRFermiEventClassTransient);
-    vector <GRPhoton> result;
-    result.reserve(fermiLATPhotons.size());
-    for (int i = 0; i < fermiLATPhotons.size(); i++) {
-        result.push_back(fermiLATPhotons[i]);
-    }
-    return result;
+    vector <GRPhoton> fermiLATPhotons = fermiLAT.photons(startTime, endTime, minEnergy, maxEnergy, location, GRFermiEventClassTransient, 0.95);
+    sort(fermiLATPhotons.begin(), fermiLATPhotons.end());
+    return fermiLATPhotons;
 }
