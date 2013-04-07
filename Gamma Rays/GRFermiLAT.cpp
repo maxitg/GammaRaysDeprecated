@@ -30,8 +30,10 @@
 #include <openssl/evp.h>
 #endif
 
-#include "GRFermiLAT.h"
 #include <curl/curl.h>
+#include <fitsio.h>
+
+#include "GRFermiLAT.h"
 
 size_t GRFermiLAT::handleFermiDataServerResponce(char *ptr, size_t size, size_t nmemb, GRFermiLAT *me) {
     return me->saveFermiDataServerResponce(ptr, size, nmemb);
@@ -441,7 +443,66 @@ GRPsf GRFermiLAT::psf(double startTime, double endTime, GRLocation location, GRF
     return GRPsf(psfFilename);
 }
 
-vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass) {
+// source: http://fermi.gsfc.nasa.gov/ssc/data/analysis/documentation/Cicerone/Cicerone_Data/LAT_Data_Columns.html#PhotonFile
+GRFermiEventClass GRFermiLAT::eventClassFromPsfInt(int psfInt) {
+    if ((psfInt/16)%2) return GRFermiEventClassUltraclean;
+    else if ((psfInt/8)%2) return GRFermiEventClassClean;
+    else if ((psfInt/4)%2) return GRFermiEventClassSource;
+    else return GRFermiEventClassTransient;
+}
+
+// source: http://fermi.gsfc.nasa.gov/ssc/data/analysis/documentation/Cicerone/Cicerone_Data/LAT_Data_Columns.html#PhotonFile
+GRFermiConversionType GRFermiLAT::conversinoTypeFromPsfInt(int psfInt) {
+    if (psfInt == 0) return GRFermiConversionTypeFront;
+    else return GRFermiConversionTypeBack;
+}
+
+vector<GRFermiLATPhoton> GRFermiLAT::psfUnfilteredPhotons(double startTime, double endTime, GRLocation location) {
+    string queryHash = downloadPhotons(startTime, endTime, location);
+    processPhotons(queryHash);
+    
     vector <GRFermiLATPhoton> photons;
+    
+    string filename = queryHash + "/timed.fits";
+    fitsfile *psfFile;
+    int status = 0;
+    long nrows;
+    
+    fits_open_table(&psfFile, filename.c_str(), READONLY, &status);
+    fits_movabs_hdu(psfFile, 2, NULL, &status);
+    fits_get_num_rows(psfFile, &nrows, &status);
+    photons.reserve(nrows);
+    
+    float readEnergies[nrows];
+    fits_read_col(psfFile, TFLOAT, 1, 1, 1, nrows, 0, readEnergies, 0, &status);
+    
+    float readRas[nrows];
+    fits_read_col(psfFile, TFLOAT, 2, 1, 1, nrows, 0, readRas, 0, &status);
+    
+    float readDecs[nrows];
+    fits_read_col(psfFile, TFLOAT, 3, 1, 1, nrows, 0, readDecs, 0, &status);
+    
+    double readTimes[nrows];
+    fits_read_col(psfFile, TDOUBLE, 10, 1, 1, nrows, 0, readTimes, 0, &status);
+    
+    int readEventClasses[nrows];
+    fits_read_col(psfFile, TINT, 15, 1, 1, nrows, 0, readEventClasses, 0, &status);
+    
+    int readConversionTypes[nrows];
+    fits_read_col(psfFile, TINT, 16, 1, 1, nrows, 0, readConversionTypes, 0, &status);
+    
+    fits_close_file(psfFile, &status);
+    
+    if (status) fits_report_error(stderr, status);
+    
+    for (int i = 0; i < nrows; i++) {
+        photons.push_back(GRFermiLATPhoton(readTimes[i], GRCoordinateSystemJ2000, readRas[i], readDecs[i], readEnergies[i], conversinoTypeFromPsfInt(readConversionTypes[i]), eventClassFromPsfInt(readEventClasses[i])));
+    }
+    
+    return photons;
+}
+
+vector<GRFermiLATPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass) {
+    vector <GRFermiLATPhoton> photons = psfUnfilteredPhotons(startTime, endTime, location);
     return photons;
 }

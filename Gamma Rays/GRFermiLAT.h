@@ -36,6 +36,10 @@ class GRFermiLAT {
     void processPhotons(string queryHash);
     string downloadPhotons(double startTime, double endTime, GRLocation location);
     
+    GRFermiEventClass eventClassFromPsfInt(int psfInt);
+    GRFermiConversionType conversinoTypeFromPsfInt(int psfInt);
+    vector <GRFermiLATPhoton> psfUnfilteredPhotons(double startTime, double endTime, GRLocation location);
+    
 public:
     GRPsf psf(double startTime, double endTime, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType);
     vector <GRFermiLATPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass);

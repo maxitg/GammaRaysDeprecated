@@ -10,6 +10,7 @@
 
 #include "GRBurst.h"
 #include "GRFermiLAT.h"
+#include "GRPhotonStorage.h"
 
 int main(int argc, const char * argv[])
 
@@ -23,6 +24,14 @@ int main(int argc, const char * argv[])
     
     GRPsf psf = fermiLAT.psf(275631628-500, 275631628+2000, location, GRFermiEventClassSource, GRFermiConversionTypeFront);
     cout << psf.spread(100.f, 0.95) << endl;
+    
+    GRPhotonStorage *storage;
+    storage->getInstance();
+    vector <GRPhoton> photons = storage->photons(275631628-500, 275631628+2000, 0, 100000, location);
+    
+    for (int i = 0; i < photons.size(); i++) {
+        cout << i+1 << ": " << photons[i].description() << endl;
+    }
     
     return 0;
 }

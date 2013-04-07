@@ -14,8 +14,8 @@ vector <GRPhoton> GRPhotonStorage::photons(double startTime, double endTime, flo
     vector <GRFermiLATPhoton> fermiLATPhotons = fermiLAT.photons(startTime, endTime, minEnergy, maxEnergy, location, GRFermiEventClassTransient);
     vector <GRPhoton> result;
     result.reserve(fermiLATPhotons.size());
-    for (int i = 0; i < result.size(); i++) {
-        result[i] = fermiLATPhotons[i];
+    for (int i = 0; i < fermiLATPhotons.size(); i++) {
+        result.push_back(fermiLATPhotons[i]);
     }
     return result;
 }
