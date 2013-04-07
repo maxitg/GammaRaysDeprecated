@@ -18,6 +18,7 @@
 		691342271709F38A00D8C601 /* libcfitsio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 698CAAF3170891BB008E4415 /* libcfitsio.a */; };
 		698CAAF4170891BB008E4415 /* libcfitsio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 698CAAF3170891BB008E4415 /* libcfitsio.a */; };
 		69A0552417115E6D006A9D69 /* GRDistribution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69A0552217115E6D006A9D69 /* GRDistribution.cpp */; };
+		69A0552617119BB8006A9D69 /* libglpk.33.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A0552517119BB8006A9D69 /* libglpk.33.dylib */; };
 		69A656CD170805340070E84C /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CC170805340070E84C /* libcrypto.dylib */; };
 		69A656CF17080D5D0070E84C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CE17080D5C0070E84C /* Security.framework */; };
 		69A656D117080D6B0070E84C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656D017080D6B0070E84C /* Foundation.framework */; };
@@ -63,6 +64,7 @@
 		698CAAF3170891BB008E4415 /* libcfitsio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcfitsio.a; path = ../../../../../usr/local/lib/libcfitsio.a; sourceTree = "<group>"; };
 		69A0552217115E6D006A9D69 /* GRDistribution.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRDistribution.cpp; sourceTree = "<group>"; };
 		69A0552317115E6D006A9D69 /* GRDistribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRDistribution.h; sourceTree = "<group>"; };
+		69A0552517119BB8006A9D69 /* libglpk.33.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libglpk.33.dylib; path = ../../../../../usr/local/lib/libglpk.33.dylib; sourceTree = "<group>"; };
 		69A656CC170805340070E84C /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		69A656CE17080D5C0070E84C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		69A656D017080D6B0070E84C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -102,6 +104,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				69A0552617119BB8006A9D69 /* libglpk.33.dylib in Frameworks */,
 				698CAAF4170891BB008E4415 /* libcfitsio.a in Frameworks */,
 				69A656D117080D6B0070E84C /* Foundation.framework in Frameworks */,
 				69A656CF17080D5D0070E84C /* Security.framework in Frameworks */,
@@ -125,6 +128,7 @@
 		69FF3C5616FF59FF00BA79AB = {
 			isa = PBXGroup;
 			children = (
+				69A0552517119BB8006A9D69 /* libglpk.33.dylib */,
 				698CAAF3170891BB008E4415 /* libcfitsio.a */,
 				69A656D017080D6B0070E84C /* Foundation.framework */,
 				69A656CE17080D5C0070E84C /* Security.framework */,

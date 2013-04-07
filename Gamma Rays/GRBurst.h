@@ -17,6 +17,7 @@
 
 #include "GRPhoton.h"
 #include "GRLocation.h"
+#include "GRDistribution.h"
 
 using namespace std;
 
@@ -31,23 +32,35 @@ enum GRBurstType {
     };
 
 class GRBurst {
+public:
     string name;
     double time;
     GRLocation location;
     GRBurstType type;
     
+private:
     vector <GRPhoton> photons_;
     bool photonsRetrieved;
     
     double startTimeLowerBound();
     double endTimeUpperBound();
-        
+    
+    GRDistribution photonDistributionFromStart(float minEnergy, float maxEnergy);
+
 public:
     GRBurst(string name, double time, GRCoordinateSystem system, float ra, float dec, GRBurstType type = GRBurstTypeUndefined) : name(name), time(time), location(GRLocation(system, ra, dec)), type(type), photonsRetrieved(0) {};
     
     double passTimeOfPhotonsFraction(float fraction);
+    int gevCount();
     
     float gevTransformHypothesisProbability(double shift, double lengthening);
+    
+    double parameterLimit(float probability, GRDistributionParameter parameter, GRDistributionObjective objective, bool *success, bool allowShift = true, bool allowLengthening = true);
+    
+    double maxShiftAllowed(float probability, bool *success, bool allowLengthening = true);
+    double minShiftAllowed(float probability, bool *success, bool allowLengthening = true);
+    double maxLengtheningAllowed(float probability, bool *success, bool allowShift = true);
+    double minLengtheningAllowed(float probability, bool *success, bool allowShift = true);
     
     vector <GRPhoton> photons();
 };

@@ -6,6 +6,8 @@
 //  Copyright (c) 2013 Maxim Piskunov. All rights reserved.
 //
 
+#include <fstream>
+
 #include "GRPhotonStorage.h"
 #include "GRFermiLAT.h"
 
@@ -13,5 +15,6 @@ vector <GRPhoton> GRPhotonStorage::photons(double startTime, double endTime, flo
     GRFermiLAT fermiLAT;
     vector <GRPhoton> fermiLATPhotons = fermiLAT.photons(startTime, endTime, minEnergy, maxEnergy, location, GRFermiEventClassTransient, 0.95);
     sort(fermiLATPhotons.begin(), fermiLATPhotons.end());
+        
     return fermiLATPhotons;
 }

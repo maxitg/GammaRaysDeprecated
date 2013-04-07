@@ -8,6 +8,8 @@
 
 #include <math.h>
 
+#include <fstream>
+
 #include "GRBurst.h"
 #include "GRPhotonStorage.h"
 #include "GRDistribution.h"
@@ -30,6 +32,11 @@ vector <GRPhoton> GRBurst::photons() {
     return photons_;
 }
 
+int GRBurst::gevCount() {
+    GRDistribution gevDistribution = photonDistributionFromStart(1000., INFINITY);
+    return gevDistribution.size();
+}
+
 double GRBurst::passTimeOfPhotonsFraction(float fraction) {
     vector <GRPhoton> burstPhotons = photons();
     
@@ -38,19 +45,42 @@ double GRBurst::passTimeOfPhotonsFraction(float fraction) {
     else return burstPhotons[index].time;
 }
 
-float GRBurst::gevTransformHypothesisProbability(double shift, double lengthening) {
+GRDistribution GRBurst::photonDistributionFromStart(float minEnergy, float maxEnergy) {
     vector <GRPhoton> allPhotons = photons();
-    vector <double> mevTimes;
-    vector <double> gevTimes;
-    
+    vector <double> times;
     double startTime = passTimeOfPhotonsFraction(START_TIME_FRACTION);
     
     for (int i = 0; i < allPhotons.size(); i++) {
-        if (allPhotons[i].energy > 1000) gevTimes.push_back(allPhotons[i].time - startTime);
-        else mevTimes.push_back(allPhotons[i].time - startTime);
+        if (allPhotons[i].energy >= minEnergy && allPhotons[i].energy < maxEnergy) times.push_back(allPhotons[i].time - startTime);
     }
     
-    GRDistribution mevDistribution(mevTimes);
-    GRDistribution gevDistribution(gevTimes);
+    return GRDistribution(times);
+}
+
+float GRBurst::gevTransformHypothesisProbability(double shift, double lengthening) {
+    GRDistribution mevDistribution = photonDistributionFromStart(0., 1000.);
+    GRDistribution gevDistribution = photonDistributionFromStart(1000., INFINITY);
     return mevDistribution.kolmogorovSmirnovTest(gevDistribution, shift, lengthening);
+}
+
+double GRBurst::parameterLimit(float probability, GRDistributionParameter parameter, GRDistributionObjective objective, bool *success, bool allowShift, bool allowLengthening) {
+    GRDistribution mevDistribution = photonDistributionFromStart(0., 1000.);
+    GRDistribution gevDistribution = photonDistributionFromStart(1000., INFINITY);
+    return mevDistribution.parameterLimit(gevDistribution, probability, parameter, objective, success, allowShift, allowLengthening);
+}
+
+double GRBurst::maxShiftAllowed(float probability, bool *success, bool allowLengthening) {
+    return parameterLimit(probability, GRDistributionParameterShift, GRDistributionObjectiveMaximize, success, true, allowLengthening);
+}
+
+double GRBurst::minShiftAllowed(float probability, bool *success, bool allowLengthening) {
+    return parameterLimit(probability, GRDistributionParameterShift, GRDistributionObjectiveMinimize, success, true, allowLengthening);
+}
+
+double GRBurst::maxLengtheningAllowed(float probability, bool *success, bool allowShift) {
+    return parameterLimit(probability, GRDistributionParameterLengthening, GRDistributionObjectiveMaximize, success, allowShift, true);
+}
+
+double GRBurst::minLengtheningAllowed(float probability, bool *success, bool allowShift) {
+    return parameterLimit(probability, GRDistributionParameterLengthening, GRDistributionObjectiveMinimize, success, allowShift, true);
 }

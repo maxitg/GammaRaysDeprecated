@@ -140,10 +140,8 @@ string GRFermiLAT::hash(double startTime, double endTime, GRLocation location) {
 string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation location) {
     
     string queryHash = hash(startTime, endTime, location);
-    cout << "query hash: " << queryHash << endl;
     if (mkdir(queryHash.c_str(), S_IRWXU ^ S_IRWXG ^ S_IRWXO) == -1) {
         if (errno == EEXIST) {
-            cout << "already downloaded!" << endl;
             return queryHash;
         }
         else {
@@ -151,6 +149,8 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
             return "";
         }
     }
+    
+    cout << "downloading query hash: " << queryHash << endl;
     
     /*
         Input form to send out
