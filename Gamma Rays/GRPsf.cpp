@@ -71,18 +71,21 @@ int GRPsf::findEnergy(float energy) {
 
 float GRPsf::spread(int energyIndex, float probability) {
     double currentProbability = 0.;
+    double previousProbability = 0.;
     int i;
     for (i = 0; i < angles.size()-1 && currentProbability < probability; i++) {
+        previousProbability = currentProbability;
         currentProbability += (probabilityDensity[energyIndex][i] + probabilityDensity[energyIndex][i+1]) * M_PI * (cos(angles[i] * M_PI / 180.) - cos(angles[i+1] * M_PI / 180.));
     }
     if (i == angles.size()-1 && currentProbability < probability) {
         i++;
+        previousProbability = currentProbability;
         currentProbability = 1.;
     }
     
     double lowerAngle = angles[i-1];
     double upperAngle = (i == angles.size() ? 180. : angles[i]);
-    double lowerProbability = currentProbability - probabilityDensity[energyIndex][i-1] * (angles[i] - angles[i-1]);
+    double lowerProbability = previousProbability;
     double upperProbability = currentProbability;
     
     if (lowerProbability == upperProbability) return lowerAngle;

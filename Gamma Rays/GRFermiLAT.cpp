@@ -366,8 +366,8 @@ string GRFermiLAT::gtmktime(string queryHash) {
     ostringstream cmd;
     cmd << fixed << "gtmktime" << " ";
     cmd << "scfile=" << queryHash << "/spacecraft.fits" << " ";
-    cmd << "filter=" << "\"DATA_QUAL==1 && LAT_CONFIG==1 && ABS(ROCK_ANGLE)<52\"" << " ";
-    cmd << "roicut=" << "yes" << " ";
+    cmd << "filter=" << "\"DATA_QUAL==1 && LAT_CONFIG==1\"" << " ";
+    cmd << "roicut=" << "no" << " ";
     cmd << "evfile=" << queryHash << "/filtered.fits" << " ";
     cmd << "outfile=" << queryHash << "/timed.fits" << " ";
     cout << cmd.str() << endl;
@@ -379,7 +379,7 @@ string GRFermiLAT::gtltcube(string queryHash) {
     if (fileExists(queryHash, "ltcube.fits")) return queryHash + "/ltcube.fits";
     ostringstream cmd;
     cmd << fixed << "gtltcube" << " ";
-    cmd << fixed << "evfile=" << queryHash << "/timed.fits" << " ";
+    cmd << fixed << "evfile=@" << queryHash << "/eventList.txt" << " ";
     cmd << fixed << "evtable=" << "EVENTS" << " ";
     cmd << fixed << "scfile=" << queryHash << "/spacecraft.fits" << " ";
     cmd << fixed << "sctable=" << "SC_DATA" << " ";
@@ -399,7 +399,7 @@ string GRFermiLAT::instrumentResponceFunctionName(GRFermiEventClass eventClass, 
     else if (eventClass == GRFermiEventClassSource) result += "SOURCE";
     else result += "TRANSIENT";
     
-    result += "_V6::";
+    result += (string)"_V6" + (eventClass == GRFermiEventClassSource ? "MC" : "") + "::";
     
     if (conversionType == GRFermiConversionTypeBack) result += "BACK";
     else result += "FRONT";
@@ -432,12 +432,11 @@ string GRFermiLAT::gtpsf(string queryHash, GRLocation location, GRFermiEventClas
 void GRFermiLAT::processPhotons(string queryHash) {
     gtselect(queryHash);
     gtmktime(queryHash);
-    gtltcube(queryHash);
 }
 
 GRPsf GRFermiLAT::psf(double startTime, double endTime, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
     string queryHash = downloadPhotons(startTime, endTime, location);
-    processPhotons(queryHash);
+    gtltcube(queryHash);
     string psfFilename = gtpsf(queryHash, location, eventClass, conversionType);
     return GRPsf(psfFilename);
 }
