@@ -275,12 +275,13 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
             res = curl_easy_perform(curl);
             curl_easy_cleanup(curl);
             
+            int progressIndex;
             if (fermiDataServerResponce.find("Query complete") != string::npos) {
                 cout << "complete!" << endl;
                 resultsReady = true;
             }
-            else if (fermiDataServerResponce.find("Query in progress") != string::npos) {
-                cout << "in progress! waiting..." << endl;
+            else if ((progressIndex = fermiDataServerResponce.rfind("In progress")) != string::npos) {
+                cout << "in progress! waiting... (" << fermiDataServerResponce.substr(progressIndex+38, 6) << ")" << endl;
                 system("sleep 1");
             }
             else {
