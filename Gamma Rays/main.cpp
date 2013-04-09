@@ -45,13 +45,12 @@ void printRanges(GRBurst burst, double prob, ostream &out) {
     maxLengthening = burst.maxLengtheningAllowed(prob, &success, false);
     if (success) {
         out << "lengthening range: (" << burst.minLengtheningAllowed(prob, &success, false) << ", " << burst.maxLengtheningAllowed(prob, &success, false) << ")" << endl;
-        out << burst.gevTransformHypothesisProbability(0., minLengthening) << endl;
     } else {
         out << "impossible" << endl;
     }
 }
 
-void drawPicture(GRBurst burst, double probability, string filename, bool chat = false, double lengtheningStep = 1.01, double shiftStep = 0.1) {
+void drawPicture(GRBurst burst, double probability, string filename, bool chat = false, double lengtheningStep = 0.1, double shiftStep = 0.1) {
     ofstream dens(filename.c_str());
     double minL = burst.minLengtheningAllowed(probability, NULL);
     double maxL = burst.maxLengtheningAllowed(probability, NULL);
@@ -59,7 +58,7 @@ void drawPicture(GRBurst burst, double probability, string filename, bool chat =
     double minS = burst.minShiftAllowed(probability, NULL);
     double maxS = burst.maxShiftAllowed(probability, NULL);
     double sprS = (maxS - minS) * 0.1;
-    for (double lengthening = minL/sprL; lengthening <= maxL*sprL; lengthening *= lengtheningStep) {
+    for (double lengthening = minL/sprL; lengthening <= maxL*sprL; lengthening += lengtheningStep) {
         for (double shift = minS - sprS; shift <= maxS + sprS; shift += shiftStep) {
             double prob = burst.gevTransformHypothesisProbability(shift, lengthening);
             if (chat) cout << lengthening << " " << shift << " " << prob << endl;
@@ -94,10 +93,10 @@ int main(int argc, const char * argv[])
         if (burst.gevCount() < 10) continue;
         
         printRanges(burst, 0.05, log);
-        drawPicture(burst, 0.05, burst.name + ".2s.pict", false, 1.1, 0.1);
+        drawPicture(burst, 0.05, burst.name + ".2s.pict", false);
         log << endl;
         printRanges(burst, 0.32, log);
-        drawPicture(burst, 0.32, burst.name + ".1s.pict", false, 1.1, 0.1);
+        drawPicture(burst, 0.32, burst.name + ".1s.pict", false);
         log << endl;
     }
     

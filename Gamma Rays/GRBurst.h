@@ -21,8 +21,8 @@
 
 using namespace std;
 
-#define GRBURST_START_TIME_LOWER_BOUND_OFFSET (-500)
-#define GRBURST_END_TIME_UPPER_BOUND_OFFSET   (2000)
+#define GRBURST_START_TIME_LOWER_BOUND_OFFSET (-20)
+#define GRBURST_END_TIME_UPPER_BOUND_OFFSET   (200)
 #define START_TIME_FRACTION                   (0.05)
 
 enum GRBurstType {

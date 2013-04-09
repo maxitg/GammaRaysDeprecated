@@ -285,6 +285,7 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
             }
             else {
                 cerr << "Query is in unknown state. Download failed." << endl;
+                cerr << "Query results URL: " << resultsURL << endl;
                 cerr << "--- start of responce ---" << endl;
                 cerr << fermiDataServerResponce << endl;
                 cerr << "--- end of responce ---" << endl;
