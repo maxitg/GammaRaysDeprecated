@@ -36,18 +36,14 @@
 
 #include "GRFermiLAT.h"
 
-size_t GRFermiLAT::handleFermiDataServerResponce(char *ptr, size_t size, size_t nmemb, GRFermiLAT *me) {
-    return me->saveFermiDataServerResponce(ptr, size, nmemb);
-}
-
-size_t GRFermiLAT::saveFermiDataServerResponce(char *ptr, size_t size, size_t nmemb) {
-    fermiDataServerResponce.append(ptr, size*nmemb);
+size_t GRFermiLAT::saveFermiDataServerResponceToString(char *ptr, size_t size, size_t nmemb, string *string) {
+    string->append(ptr, size * nmemb);
     return size * nmemb;
 }
 
-size_t GRFermiLAT::saveFermiDataServerResponceToFile(char *ptr, size_t size, size_t nmemb, FILE *stream) {
+size_t GRFermiLAT::saveFermiDataServerResponceToFile(char *ptr, size_t size, size_t nmemb, FILE *file) {
     size_t written;
-    written = fwrite(ptr, size, nmemb, stream);
+    written = fwrite(ptr, size, nmemb, file);
     return written;
 }
 
@@ -98,24 +94,21 @@ string GRFermiLAT::hash(double startTime, double endTime, GRLocation location) {
     return result;
 }
 
-enum GRFermiLATDownloadPhotonsException {
-    GRFermiLATDownloadPhotonsExceptionTimeBeforeStart = 0,
-    };
-
 string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation location) {
     
     string queryHash = hash(startTime, endTime, location);
     if (mkdir(queryHash.c_str(), S_IRWXU ^ S_IRWXG ^ S_IRWXO) == -1) {
-        if (errno == EEXIST) {
-            return queryHash;
-        }
-        else {
+        if (errno != EEXIST) {
             perror(queryHash.c_str());
-            return "";
+            throw GRFermiLATExceptionMkdir;
         }
     }
     
-    cout << "downloading query hash: " << queryHash << endl;
+    if ((!fileExists(queryHash, "eventList.txt")) || (!fileExists(queryHash, "spacecraft.fits"))) {
+        cout << "downloading query hash: " << queryHash << endl;
+    } else {
+        return queryHash;
+    }
     
      /*
         Input form to send out
@@ -209,75 +202,100 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
     
     curl = curl_easy_init();
     
+    string responce;
+    
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, "http://fermi.gsfc.nasa.gov/cgi-bin/ssc/LAT/LATDataQuery.cgi");
         curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &this->handleFermiDataServerResponce);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responce);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &this->saveFermiDataServerResponceToString);
         
         res = curl_easy_perform(curl);
-        if(res != CURLE_OK) printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+        if(res != CURLE_OK) {
+            cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
+            throw GRFermiLATExceptionCurlPerform;
+        }
         
         curl_easy_cleanup(curl);
         curl_formfree(formpost);
+    } else {
+        throw GRFermiLATExceptionCurlInit;
     }
     
     string resultsURLLeft = "The results of your query may be found at <a href=\"";
     string resultsURLRight = "\">";
-    if (fermiDataServerResponce.find(resultsURLLeft) == string::npos) {
+    size_t resultsURLIndex = responce.find(resultsURLLeft);
+    
+    if (resultsURLIndex == string::npos) {
         string errorMessageLeft = "Unable to handle query";
         string errorMessageRight = "</b>";
-        size_t errorMessageIndex = fermiDataServerResponce.find(errorMessageLeft);
-        size_t errorMessageSize = fermiDataServerResponce.find(errorMessageRight, errorMessageIndex) - errorMessageIndex;
-        string errorMessage = fermiDataServerResponce.substr(errorMessageIndex, errorMessageSize);
+        size_t errorMessageIndex = responce.find(errorMessageLeft);
+        size_t errorMessageSize = responce.find(errorMessageRight, errorMessageIndex) - errorMessageIndex;
+        string errorMessage = responce.substr(errorMessageIndex, errorMessageSize);
         cerr << "Fermi data server error: " << errorMessage << endl;
-        throw GRFermiLATDownloadPhotonsExceptionTimeBeforeStart;
+        cerr << "coordfield=" << coordfield.str().c_str() << " " << "timefield=" << timefield.str().c_str() << endl;
+        
+        if (responce.find("occurs before data start") != string::npos) throw GRFermiLATExceptionFermiDataServerTooEarly;
+        else throw GRFermiLATExceptionFermiDataServerUnknown;
     }
-    size_t resultsURLIndex = fermiDataServerResponce.find(resultsURLLeft) + resultsURLLeft.size();
-    size_t resultsURLSize = fermiDataServerResponce.find(resultsURLRight, resultsURLIndex) - resultsURLIndex;
-    string resultsURL = fermiDataServerResponce.substr(resultsURLIndex, resultsURLSize);
+    
+    resultsURLIndex += resultsURLLeft.size();
+    size_t resultsURLSize = responce.find(resultsURLRight, resultsURLIndex) - resultsURLIndex;
+    string resultsURL = responce.substr(resultsURLIndex, resultsURLSize);
     
     bool resultsReady = false;
     vector <string> resultURLs;
     
-    if (curl) {
-        while (!resultsReady) {
-            fermiDataServerResponce.clear();
-            curl = curl_easy_init();
+    while (!resultsReady) {
+        responce.clear();
+        curl = curl_easy_init();
+        if (curl) {
             curl_easy_setopt(curl, CURLOPT_URL, resultsURL.c_str());
-            curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
-            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &this->handleFermiDataServerResponce);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &responce);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &this->saveFermiDataServerResponceToString);
             res = curl_easy_perform(curl);
-            if (res != CURLE_OK) printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-            
+            if (res != CURLE_OK) {
+                cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
+                throw GRFermiLATExceptionCurlPerform;
+            }
+        
             curl_easy_cleanup(curl);
-            
-            int progressIndex;
-            if (fermiDataServerResponce.find("Query complete") != string::npos) {
-                cout << "complete!" << endl;
-                resultsReady = true;
-            }
-            else if ((progressIndex = fermiDataServerResponce.rfind("In progress")) != string::npos) {
-                cout << "in progress! waiting... (" << fermiDataServerResponce.substr(progressIndex+38, 6) << ")" << endl;
-                system("sleep 1");
-            }
-            else {
-                cerr << "Query is in unknown state. Download failed." << endl;
-                cerr << "coordfield=" << coordfield.str().c_str() << " " << "timefield=" << timefield.str().c_str() << endl;
-                cerr << "Query results URL: " << resultsURL << endl;
-                cerr << "--- start of responce ---" << endl;
-                cerr << fermiDataServerResponce << endl;
-                cerr << "--- end of responce ---" << endl;
-                return "";
-            }
+        } else {
+            throw GRFermiLATExceptionCurlInit;
         }
         
-        size_t location = 0;
-        resultURLs.clear();
-        while ((location = fermiDataServerResponce.find(".fits\">", ++location)) != string::npos) {
-            size_t linkIndex = fermiDataServerResponce.rfind("href=\"", location);
-            resultURLs.push_back(fermiDataServerResponce.substr(linkIndex+6, (location+5) - (linkIndex+6)));
+        int progressIndex;
+        if (responce.find("Query complete") != string::npos) {
+            cout << "complete!" << endl;
+            resultsReady = true;
         }
+        else if ((progressIndex = (int)responce.rfind("In progress")) != string::npos) {
+            cout << "in progress! waiting... (" << responce.substr(progressIndex+38, 6) << ")" << endl;
+            system("sleep 1");
+        }
+        else if (responce.rfind("Query in progress") != string::npos) {
+            cout << "in progress! waiting... (0)" << endl;
+            system("sleep 1");
+        } else {
+            cerr << "Query is in unknown state. Download failed." << endl;
+            cerr << "coordfield=" << coordfield.str().c_str() << " " << "timefield=" << timefield.str().c_str() << endl;
+            cerr << "Query results URL: " << resultsURL << endl;
+            cerr << "--- start of responce ---" << endl;
+            cerr << responce << endl;
+            cerr << "--- end of responce ---" << endl;
+            throw GRFermiLATExceptionFermiDataServerQuiryStateUnknown;
+        }
+    }
+        
+    size_t currentPosition = 0;
+    resultURLs.clear();
+    while ((currentPosition = responce.find(".fits\">", ++currentPosition)) != string::npos) {
+        size_t linkIndex = responce.rfind("href=\"", currentPosition);
+        resultURLs.push_back(responce.substr(linkIndex+6, (currentPosition+5) - (linkIndex+6)));
+    }
+    
+    if (!resultURLs.size()) {
+        throw GRFermiLATExceptionFermiDataServerEmptyResults;
     }
     
     vector <string> filenames(resultURLs.size());
@@ -285,29 +303,48 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
     for (int i = 0; i < resultURLs.size(); i++) {
         filenames[i] = resultURLs[i].substr(resultURLs[i].rfind("/")+1);
         FILE *fits = fopen((queryHash + "/" + filenames[i]).c_str(), "wb");
+        if (fits == NULL) {
+            cerr << "file open for write error: " << queryHash + "/" + filenames[i] << endl;
+            throw GRFermiLATExceptionFileOpen;
+        }
         curl = curl_easy_init();
-        curl_easy_setopt(curl, CURLOPT_URL, resultURLs[i].c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fits);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &this->saveFermiDataServerResponceToFile);
-        res = curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
+        if (curl) {
+            curl_easy_setopt(curl, CURLOPT_URL, resultURLs[i].c_str());
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, fits);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &this->saveFermiDataServerResponceToFile);
+            res = curl_easy_perform(curl);
+            if (res != CURLE_OK) {
+                cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << endl;
+                throw GRFermiLATExceptionCurlPerform;
+            }
+            curl_easy_cleanup(curl);
+        } else {
+            throw GRFermiLATExceptionCurlInit;
+        }
         fclose(fits);
     }
     
     ofstream eventList((queryHash + "/eventList.txt").c_str());
+    if (eventList.fail()) {
+        cerr << "file open for write error: " << queryHash + "/eventList.txt" << endl;
+        throw GRFermiLATExceptionFileOpen;
+    }
     for (int i = 0; i < filenames.size(); i++) {
         if (filenames[i].find("_EV") != string::npos) eventList << queryHash + "/" + filenames[i] << endl;
         else if (filenames[i].find("_SC") != string::npos) {
-            symlink(filenames[i].c_str(), (queryHash + "/spacecraft.fits").c_str());
+            if (symlink(filenames[i].c_str(), (queryHash + "/spacecraft.fits").c_str()) == -1) {
+                perror((queryHash + "/spacecraft.fits").c_str());
+                throw GRFermiLATExceptionSymlink;
+            }
         }
         else {
             cerr << "unknown file type: " << filenames[i] << endl;
+            throw GRFermiLATExceptionFermiDataServerUnknownFile;
         }
     }
     eventList.close();
     
-    if (resultURLs.size() == 0) cout << "zero results !!!" << endl;
-    else cout << "files downloaded:" << endl;
+    cout << "files downloaded:" << endl;
     for (int i = 0; i < resultURLs.size(); i++) {
         cout << resultURLs[i] << endl;
     }
@@ -323,6 +360,9 @@ bool GRFermiLAT::fileExists(string queryHash, string fileName) {
 
 string GRFermiLAT::gtselect(string queryHash) {
     if (fileExists(queryHash, "filtered.fits")) return queryHash + "/filtered.fits";
+    if (!fileExists(queryHash, "eventList.txt")) {
+        throw GRFermiLATExceptionNoEventListFile;
+    }
     ostringstream cmd;
     cmd << fixed << "gtselect" << " ";
     cmd << "infile=@" << queryHash << "/eventList.txt" << " ";
@@ -346,6 +386,12 @@ string GRFermiLAT::gtselect(string queryHash) {
 
 string GRFermiLAT::gtmktime(string queryHash) {
     if (fileExists(queryHash, "timed.fits")) return queryHash + "/timed.fits";
+    if (!fileExists(queryHash, "spacecraft.fits")) {
+        throw GRFermiLATExceptionNoSpacecraftFile;
+    }
+    if (!fileExists(queryHash, "filtered.fits")) {
+        throw GRFermiLATExceptionNoFilteredFile;
+    }
     ostringstream cmd;
     cmd << fixed << "gtmktime" << " ";
     cmd << "scfile=" << queryHash << "/spacecraft.fits" << " ";
@@ -354,12 +400,20 @@ string GRFermiLAT::gtmktime(string queryHash) {
     cmd << "evfile=" << queryHash << "/filtered.fits" << " ";
     cmd << "outfile=" << queryHash << "/timed.fits" << " ";
     cout << cmd.str() << endl;
-    system(cmd.str().c_str());
+    if (system(cmd.str().c_str()) != 0) {
+        throw GRFermiLATExceptionGtmktimeFailed;
+    }
     return queryHash + "/timed.fits";
 }
 
 string GRFermiLAT::gtltcube(string queryHash) {
     if (fileExists(queryHash, "ltcube.fits")) return queryHash + "/ltcube.fits";
+    if (!fileExists(queryHash, "eventList.txt")) {
+        throw GRFermiLATExceptionNoEventListFile;
+    }
+    if (!fileExists(queryHash, "spacecraft.fits")) {
+        throw GRFermiLATExceptionNoSpacecraftFile;
+    }
     ostringstream cmd;
     cmd << fixed << "gtltcube" << " ";
     cmd << fixed << "evfile=@" << queryHash << "/eventList.txt" << " ";
@@ -393,6 +447,9 @@ string GRFermiLAT::instrumentResponceFunctionName(GRFermiEventClass eventClass, 
 string GRFermiLAT::gtpsf(string queryHash, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
     string psfFilename = "psf_" + instrumentResponceFunctionName(eventClass, conversionType) + ".fits";
     if (fileExists(queryHash, psfFilename)) return queryHash + "/" + psfFilename;
+    if (!fileExists(queryHash, "ltcube.fits")) {
+        throw GRFermiLATExceptionNoLtCubeFile;
+    }
     ostringstream cmd;
     cmd << fixed << "gtpsf" << " ";
     cmd << "expcube=" << queryHash << "/ltcube.fits" << " ";
@@ -414,15 +471,20 @@ string GRFermiLAT::gtpsf(string queryHash, GRLocation location, GRFermiEventClas
 
 void GRFermiLAT::processPhotons(string queryHash) {
     gtselect(queryHash);
-    gtmktime(queryHash);
+    try {
+        gtmktime(queryHash);
+    } catch (GRFermiLATException e) {
+        if (e == GRFermiLATExceptionGtmktimeFailed) throw GRFermiLATExceptionNoPhotons;
+    }
 }
 
 GRPsf GRFermiLAT::psf(double startTime, double endTime, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
     string queryHash;
     try {
         queryHash = downloadPhotons(startTime, endTime, location);
-    } catch (GRFermiLATDownloadPhotonsException) {
-        cerr << "too early" << endl;
+    } catch (GRFermiLATException e) {
+        if (e == GRFermiLATExceptionFermiDataServerTooEarly) throw GRFermiLATExceptionNoPhotons;
+        else throw e;
     }
     
     gtltcube(queryHash);
@@ -445,15 +507,21 @@ GRFermiConversionType GRFermiLAT::conversinoTypeFromPsfInt(int psfInt) {
 }
 
 vector<GRFermiLATPhoton> GRFermiLAT::allPhotons(double startTime, double endTime, GRLocation location) {
+    vector <GRFermiLATPhoton> photons;
     string queryHash;
     try {
         queryHash = downloadPhotons(startTime, endTime, location);
-    } catch (GRFermiLATDownloadPhotonsException) {
-        cerr << "too early" << endl;
+    } catch (GRFermiLATException e) {
+        if (e == GRFermiLATExceptionFermiDataServerTooEarly) return photons;
+        else throw e;
     }
-    processPhotons(queryHash);
     
-    vector <GRFermiLATPhoton> photons;
+    try {
+        processPhotons(queryHash);
+    } catch (GRFermiLATException e) {
+        if (e == GRFermiLATExceptionNoPhotons) return photons;
+        else throw e;
+    }
     
     string filename = queryHash + "/timed.fits";
     fitsfile *timedFile;
@@ -501,7 +569,15 @@ vector<GRPhoton> GRFermiLAT::photons(double startTime, double endTime, float min
     for (int i = 0; i < psfs.size(); i++) psfs[i].reserve(GRFermiConversionTypesCount);
     for (int i = 0; i < GRFermiEventClassesCount; i++) {
         for (int j = 0; j < GRFermiConversionTypesCount; j++) {
-            psfs[i].push_back(psf(startTime, endTime, location, GRFermiEventClasses[i], GRFermiConversionTypes[j]));
+            try {
+                psfs[i].push_back(psf(startTime, endTime, location, GRFermiEventClasses[i], GRFermiConversionTypes[j]));
+            } catch (GRFermiLATException e) {
+                if (e == GRFermiLATExceptionNoPhotons) {
+                    vector <GRPhoton> emptyResult;
+                    return emptyResult;
+                }
+                else throw e;
+            }
         }
     }
     vector <GRFermiLATPhoton> photons = allPhotons(startTime, endTime, location);

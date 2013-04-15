@@ -21,7 +21,7 @@
 
 using namespace std;
 
-#define START_TIME_FRACTION                   (0.05)
+#define START_TIME_FRACTION (0.05)
 
 enum GRBurstType {
     GRBurstTypeUndefined = 0,
@@ -63,10 +63,11 @@ public:
     double minShiftAllowed(float probability, bool *success, bool allowLengthening = true);
     double maxLengtheningAllowed(float probability, bool *success, bool allowShift = true);
     double minLengtheningAllowed(float probability, bool *success, bool allowShift = true);
-    
+        
     vector <GRPhoton> photons();
     
     string description();
+    string info();
 };
 
 #endif /* defined(__Gamma_Rays__GRBurst__) */

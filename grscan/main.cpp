@@ -1,8 +1,8 @@
 //
 //  main.cpp
-//  Gamma Rays
+//  grscan
 //
-//  Created by Maxim Piskunov on 24.03.2013.
+//  Created by Maxim Piskunov on 15.04.2013.
 //  Copyright (c) 2013 Maxim Piskunov. All rights reserved.
 //
 
@@ -87,7 +87,7 @@ void printException(GRFermiLATException e) {
 int main(int argc, const char * argv[])
 {
     try {
-    
+        
         ofstream log("log");
         
         tm tm1 = {0};
@@ -102,15 +102,15 @@ int main(int argc, const char * argv[])
         
         double now = time(NULL) + mktime(&tm1) - mktime(&tm2);
         
-        GRBurstStorage *storage;
+        GRBurstStorage *storage = NULL;
         storage->getInstance();
         vector <GRBurst> burstCatalog = storage->bursts(0., now);
-
+        
         for (int i = 0; i < burstCatalog.size(); i++) {
             
-        
+            
             cout << "processing " << burstCatalog[i].name << "..." << endl;
-        
+            
             log << burstCatalog[i].info() << endl;
             cout << burstCatalog[i].info() << endl;
             
@@ -132,7 +132,7 @@ int main(int argc, const char * argv[])
         }
         
         log.close();
-    
+        
     } catch (GRFermiLATException e) {
         printException(e);
     }

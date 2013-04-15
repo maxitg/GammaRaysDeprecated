@@ -16,7 +16,7 @@
 #include "GRDistribution.h"
 
 int GRDistribution::size() {
-    return values.size();
+    return (int)values.size();
 }
 
 vector <GRDistributionCDFPoint> GRDistribution::cdf() {
@@ -131,7 +131,7 @@ float GRDistribution::kolmogorovSmirnovTest(GRDistribution distribution, double 
         }
     }
         
-    return kolmogorovSmirnovProbability(maxDistance, values.size(), distribution.values.size());
+    return kolmogorovSmirnovProbability(maxDistance, (int)values.size(), (int)distribution.values.size());
 }
 
 double GRDistribution::parameterLimit(GRDistribution distribution, float probability, GRDistributionParameter parameter, GRDistributionObjective objective, bool *success, bool allowShift, bool allowLengthening) {
@@ -143,7 +143,7 @@ double GRDistribution::parameterLimit(GRDistribution distribution, float probabi
     glp_set_obj_dir(problem, objective == GRDistributionObjectiveMaximize ? GLP_MIN : GLP_MAX);
     glp_term_out(0);
     
-    glp_add_rows(problem, values.size());
+    glp_add_rows(problem, (int)values.size());
     glp_add_cols(problem, 2);
     
     if (allowLengthening) {
@@ -170,7 +170,7 @@ double GRDistribution::parameterLimit(GRDistribution distribution, float probabi
         glp_set_obj_coef(problem, 2, 0.);
     }
     
-    double maxKolmogorovSmirnovDistance = kolmogorovSmirnovDistance(probability, distribution.values.size(), values.size());
+    double maxKolmogorovSmirnovDistance = kolmogorovSmirnovDistance(probability, (int)distribution.values.size(), (int)values.size());
     
     for (int i = 0; i < values.size(); i++) {
         double lowerCDF, upperCDF;
@@ -196,7 +196,7 @@ double GRDistribution::parameterLimit(GRDistribution distribution, float probabi
         //cout << (leftIndex >= 0 ? distribution.values[leftIndex] : -INFINITY) << " < " << values[i] << " * len + 1 * shift < " << (rightIndex < distribution.values.size() ? distribution.values[rightIndex] : INFINITY) << endl;
     }
     
-    glp_load_matrix(problem, 2*values.size(), ia, ja, ar);
+    glp_load_matrix(problem, 2*(int)values.size(), ia, ja, ar);
     glp_simplex(problem, NULL);
     
     if (success) {

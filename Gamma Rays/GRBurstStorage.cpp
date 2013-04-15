@@ -9,6 +9,10 @@
 #include "GRBurstStorage.h"
 #include "GRFermiGBM.h"
 
+#include <algorithm>
+
+using namespace std;
+
 vector <GRBurst> GRBurstStorage::bursts(double startTime, double endTime) {
     GRFermiGBM fermiGRB;
     vector <GRBurst> bursts = fermiGRB.bursts(startTime, endTime);

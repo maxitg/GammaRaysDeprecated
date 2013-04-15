@@ -7,9 +7,12 @@
 //
 
 #include <fstream>
+#include <algorithm>
 
 #include "GRPhotonStorage.h"
 #include "GRFermiLAT.h"
+
+using namespace std;
 
 vector <GRPhoton> GRPhotonStorage::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, float locationError) {
     GRFermiLAT fermiLAT;

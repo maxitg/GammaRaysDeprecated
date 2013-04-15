@@ -54,7 +54,7 @@ void GRFermiGBM::download() {
     grbCatalog = fopen("grbCatalog.fits", "w");
     
     fseek(gbmRequestInput, 0, SEEK_END);
-    int gbmRequestSize = ftell(gbmRequestInput);
+    long gbmRequestSize = ftell(gbmRequestInput);
     fseek(gbmRequestInput, 0, SEEK_SET);
     
     curl = curl_easy_init();
