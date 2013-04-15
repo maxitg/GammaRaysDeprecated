@@ -21,28 +21,27 @@ class GRFermiLAT {
     static size_t handleFermiDataServerResponce(char *ptr, size_t size, size_t nmemb, GRFermiLAT *me);
     static size_t saveFermiDataServerResponceToFile(char *ptr, size_t size, size_t nmemv, FILE *stream);
     size_t saveFermiDataServerResponce(char *ptr, size_t size, size_t memb);
-    char digitHex(int digit);
+    
+    char digitHexCode(int digit);
     string hash(double startTime, double endTime, GRLocation location);
     
+    string downloadPhotons(double startTime, double endTime, GRLocation location);
+    void processPhotons(string queryHash);
+    vector <GRFermiLATPhoton> allPhotons(double startTime, double endTime, GRLocation location);
+    
+    bool fileExists(string queryHash, string fileName);
+    string instrumentResponceFunctionName(GRFermiEventClass eventClass, GRFermiConversionType conversionType);
     string gtselect(string queryHash);
     string gtmktime(string queryHash);
     string gtltcube(string queryHash);
     string gtpsf(string queryHash, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType);
     
-    string instrumentResponceFunctionName(GRFermiEventClass eventClass, GRFermiConversionType conversionType);
-    
-    bool fileExists(string queryHash, string fileName);
-    
-    void processPhotons(string queryHash);
-    string downloadPhotons(double startTime, double endTime, GRLocation location);
-    
     GRFermiEventClass eventClassFromPsfInt(int psfInt);
     GRFermiConversionType conversinoTypeFromPsfInt(int psfInt);
-    vector <GRFermiLATPhoton> psfUnfilteredPhotons(double startTime, double endTime, GRLocation location);
     
 public:
     GRPsf psf(double startTime, double endTime, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType);
-    vector <GRPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass, float confidence);
+    vector <GRPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, float locationError, GRFermiEventClass worstEventClass, float confidence);
 };
 
 #endif /* defined(__Gamma_Rays__GRFermiLAT__) */

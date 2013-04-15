@@ -16,6 +16,9 @@
 		691342251709F35900D8C601 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CE17080D5C0070E84C /* Security.framework */; };
 		691342261709F36500D8C601 /* GRLocation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7A16FF5BC600BA79AB /* GRLocation.cpp */; };
 		691342271709F38A00D8C601 /* libcfitsio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 698CAAF3170891BB008E4415 /* libcfitsio.a */; };
+		692CB57D171ACA5200665987 /* GRBurstStorage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 692CB57B171ACA5100665987 /* GRBurstStorage.cpp */; };
+		692CB580171ACB3E00665987 /* GRFermiGBM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 692CB57E171ACB3E00665987 /* GRFermiGBM.cpp */; };
+		696165791717DF120065C354 /* GRModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 696165771717DF120065C354 /* GRModel.cpp */; };
 		698CAAF4170891BB008E4415 /* libcfitsio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 698CAAF3170891BB008E4415 /* libcfitsio.a */; };
 		69A0552417115E6D006A9D69 /* GRDistribution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69A0552217115E6D006A9D69 /* GRDistribution.cpp */; };
 		69A0552617119BB8006A9D69 /* libglpk.33.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A0552517119BB8006A9D69 /* libglpk.33.dylib */; };
@@ -61,6 +64,12 @@
 		691342181709EA8000D8C601 /* grspread */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = grspread; sourceTree = BUILT_PRODUCTS_DIR; };
 		6913421A1709EA8000D8C601 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		6913421C1709EA8000D8C601 /* grspread.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = grspread.1; sourceTree = "<group>"; };
+		692CB57B171ACA5100665987 /* GRBurstStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRBurstStorage.cpp; sourceTree = "<group>"; };
+		692CB57C171ACA5200665987 /* GRBurstStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRBurstStorage.h; sourceTree = "<group>"; };
+		692CB57E171ACB3E00665987 /* GRFermiGBM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRFermiGBM.cpp; sourceTree = "<group>"; };
+		692CB57F171ACB3E00665987 /* GRFermiGBM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRFermiGBM.h; sourceTree = "<group>"; };
+		696165771717DF120065C354 /* GRModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRModel.cpp; sourceTree = "<group>"; };
+		696165781717DF120065C354 /* GRModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRModel.h; sourceTree = "<group>"; };
 		698CAAF3170891BB008E4415 /* libcfitsio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcfitsio.a; path = ../../../../../usr/local/lib/libcfitsio.a; sourceTree = "<group>"; };
 		69A0552217115E6D006A9D69 /* GRDistribution.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRDistribution.cpp; sourceTree = "<group>"; };
 		69A0552317115E6D006A9D69 /* GRDistribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRDistribution.h; sourceTree = "<group>"; };
@@ -155,8 +164,14 @@
 				69FF3C6216FF59FF00BA79AB /* main.cpp */,
 				69A0552217115E6D006A9D69 /* GRDistribution.cpp */,
 				69A0552317115E6D006A9D69 /* GRDistribution.h */,
+				692CB57E171ACB3E00665987 /* GRFermiGBM.cpp */,
+				692CB57F171ACB3E00665987 /* GRFermiGBM.h */,
+				692CB57B171ACA5100665987 /* GRBurstStorage.cpp */,
+				692CB57C171ACA5200665987 /* GRBurstStorage.h */,
 				69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */,
 				69FF3C7216FF5A7C00BA79AB /* GRBurst.h */,
+				696165771717DF120065C354 /* GRModel.cpp */,
+				696165781717DF120065C354 /* GRModel.h */,
 				69FF3C8016FF68CF00BA79AB /* GRPhotonStorage.cpp */,
 				69FF3C8116FF68CF00BA79AB /* GRPhotonStorage.h */,
 				69FF3C7A16FF5BC600BA79AB /* GRLocation.cpp */,
@@ -263,6 +278,9 @@
 				69FF3C8216FF68CF00BA79AB /* GRPhotonStorage.cpp in Sources */,
 				69A656DA170839BD0070E84C /* GRPsf.cpp in Sources */,
 				69A0552417115E6D006A9D69 /* GRDistribution.cpp in Sources */,
+				696165791717DF120065C354 /* GRModel.cpp in Sources */,
+				692CB57D171ACA5200665987 /* GRBurstStorage.cpp in Sources */,
+				692CB580171ACB3E00665987 /* GRFermiGBM.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -14,6 +14,11 @@
 
 using namespace std;
 
+struct GRDistributionCDFPoint {
+    double value;
+    double probability;
+};
+
 enum GRDistributionParameter {
     GRDistributionParameterShift = 0,
     GRDistributionParameterLengthening = 1
@@ -34,8 +39,9 @@ public:
     
     int size();
     
-    float kolmogorovSmirnovTest(GRDistribution distribution, double shift = 0., double lengthening = 1.);
+    vector <GRDistributionCDFPoint> cdf();
     
+    float kolmogorovSmirnovTest(GRDistribution distribution, double shift = 0., double lengthening = 1.);
     double parameterLimit(GRDistribution distribution, float probability, GRDistributionParameter parameter, GRDistributionObjective objective, bool *success, bool allowShift = true, bool allowLengthening = true);
 };
 

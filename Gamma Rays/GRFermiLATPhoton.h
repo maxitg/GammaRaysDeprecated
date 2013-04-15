@@ -42,7 +42,7 @@ class GRFermiLATPhoton : public GRPhoton {
     string eventClassName();
     
 public:
-    GRFermiLATPhoton(double time, GRCoordinateSystem system, float ra, float dec, float energy, GRFermiConversionType conversionType, GRFermiEventClass fermiEventClass) : GRPhoton(time, system, ra, dec, energy), conversionType(conversionType), eventClass(fermiEventClass) {};
+    GRFermiLATPhoton(double time, GRLocation location, float energy, GRFermiConversionType conversionType, GRFermiEventClass fermiEventClass) : GRPhoton(time, location, energy), conversionType(conversionType), eventClass(fermiEventClass) {};
     
     string description();
 };

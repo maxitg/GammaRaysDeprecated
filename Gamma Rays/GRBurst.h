@@ -21,8 +21,6 @@
 
 using namespace std;
 
-#define GRBURST_START_TIME_LOWER_BOUND_OFFSET (-20)
-#define GRBURST_END_TIME_UPPER_BOUND_OFFSET   (200)
 #define START_TIME_FRACTION                   (0.05)
 
 enum GRBurstType {
@@ -35,7 +33,10 @@ class GRBurst {
 public:
     string name;
     double time;
+    double duration;
+    double durationError;
     GRLocation location;
+    float locationError;
     GRBurstType type;
     
 private:
@@ -45,12 +46,13 @@ private:
     double startTimeLowerBound();
     double endTimeUpperBound();
     
-    GRDistribution photonDistributionFromStart(float minEnergy, float maxEnergy);
-
 public:
-    GRBurst(string name, double time, GRCoordinateSystem system, float ra, float dec, GRBurstType type = GRBurstTypeUndefined) : name(name), time(time), location(GRLocation(system, ra, dec)), type(type), photonsRetrieved(0) {};
+    bool operator<(GRBurst burst) const;
+    GRDistribution photonDistributionFromStart(float minEnergy, float maxEnergy);    
+    GRBurst(string name, double time, double duration, double durationError, GRLocation location, float locationError, GRBurstType type = GRBurstTypeUndefined) : name(name), time(time), duration(duration), durationError(durationError), location(location), locationError(locationError), type(type), photonsRetrieved(0) {};
     
     double passTimeOfPhotonsFraction(float fraction);
+    int mevCount();
     int gevCount();
     
     float gevTransformHypothesisProbability(double shift, double lengthening);
@@ -63,6 +65,8 @@ public:
     double minLengtheningAllowed(float probability, bool *success, bool allowShift = true);
     
     vector <GRPhoton> photons();
+    
+    string description();
 };
 
 #endif /* defined(__Gamma_Rays__GRBurst__) */

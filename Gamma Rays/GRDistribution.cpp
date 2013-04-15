@@ -19,6 +19,21 @@ int GRDistribution::size() {
     return values.size();
 }
 
+vector <GRDistributionCDFPoint> GRDistribution::cdf() {
+    vector <GRDistributionCDFPoint> result;
+    result.reserve(2*values.size());
+    for (int i = 0; i < values.size(); i++) {
+        GRDistributionCDFPoint point;
+        point.value = values[i];
+        point.probability = (double)i/values.size();
+        result.push_back(point);
+        point.value = values[i];
+        point.probability = (double)(i+1)/values.size();
+        result.push_back(point);
+    }
+    return result;
+}
+
 double GRDistribution::kolmogorovSmirnovProbability(double distance, int n1, int n2) {
     double n = (double)n1*n2/(n1+n2);
     double z = (sqrt(n) + 0.12 + 0.11/sqrt(n)) * distance;

@@ -12,6 +12,7 @@
 #include "GRBurst.h"
 #include "GRFermiLAT.h"
 #include "GRPhotonStorage.h"
+#include "GRBurstStorage.h"
 
 void printRanges(GRBurst burst, double prob, ostream &out) {
     bool success;
@@ -50,27 +51,59 @@ void printRanges(GRBurst burst, double prob, ostream &out) {
     }
 }
 
-void drawPicture(GRBurst burst, double probability, string filename, bool chat = false, double lengtheningStep = 0.1, double shiftStep = 0.1) {
+void drawPicture(GRBurst burst, double probability, string filename, bool chat = false, double lengtheningSteps = 100, double shiftSteps = 100) {
     ofstream dens(filename.c_str());
-    double minL = burst.minLengtheningAllowed(probability, NULL);
-    double maxL = burst.maxLengtheningAllowed(probability, NULL);
+    bool success;
+    double minL = burst.minLengtheningAllowed(probability, &success);
+    double maxL = burst.maxLengtheningAllowed(probability, &success);
     double sprL = exp((log(maxL) - log(minL)) * 0.1);
-    double minS = burst.minShiftAllowed(probability, NULL);
-    double maxS = burst.maxShiftAllowed(probability, NULL);
+    minL = minL/sprL;
+    maxL = maxL*sprL;
+    double stepL = (maxL - minL)/lengtheningSteps;
+    double minS = burst.minShiftAllowed(probability, &success);
+    double maxS = burst.maxShiftAllowed(probability, &success);
     double sprS = (maxS - minS) * 0.1;
-    for (double lengthening = minL/sprL; lengthening <= maxL*sprL; lengthening += lengtheningStep) {
-        for (double shift = minS - sprS; shift <= maxS + sprS; shift += shiftStep) {
+    minS = minS - sprS;
+    maxS = maxS + sprS;
+    double stepS = (maxS - minS)/shiftSteps;
+    
+    if (!success) {
+        if (chat) cout << "too low to draw" << endl;
+        return;
+    }
+    
+    for (double lengthening = minL; lengthening <= maxL; lengthening += stepL) {
+        if (chat) cout << "drawing " << lengthening << " ..." << endl;
+        for (double shift = minS; shift <= maxS; shift += stepS) {
             double prob = burst.gevTransformHypothesisProbability(shift, lengthening);
-            if (chat) cout << lengthening << " " << shift << " " << prob << endl;
             dens << lengthening << " " << shift << " " << (prob > probability ? prob : 0) << endl;
         }
     }
     dens.close();
 }
 
-int main(int argc, const char * argv[])
+void drawCDF(GRBurst burst, float minEnergy, float maxEnergy, string filename) {
+    ofstream cdfFile(filename.c_str());
+    vector <GRDistributionCDFPoint> points = burst.photonDistributionFromStart(minEnergy, maxEnergy).cdf();
+    for (int i = 0; i < points.size(); i++) {
+        cdfFile << points[i].value << " " << points[i].probability << endl;
+    }
+    cdfFile.close();
+}
 
+int main(int argc, const char * argv[])
 {
+    
+    GRBurstStorage *storage;
+    storage->getInstance();
+    vector <GRBurst> burstCatalog = storage->bursts(0., 387639860.000000);
+    for (int i = 0; i < burstCatalog.size(); i++) {
+        cout << burstCatalog[i].description() << endl;
+    }
+    cout << fixed << 387639860.000000 << endl;
+    
+    return 0;
+    
     ifstream bursts("bursts");
     ofstream log("log");
     
@@ -82,21 +115,26 @@ int main(int argc, const char * argv[])
         double MET;
         float ra;
         float dec;
+        float locationError;
         
-        bursts >> name >> MET >> ra >> dec;
+        bursts >> name >> MET >> ra >> dec >> locationError;
     
         cout << "processing " << name << "..." << endl;
 
-        GRBurst burst = GRBurst(name, MET, GRCoordinateSystemJ2000, ra, dec);
+        GRLocation location = GRLocation(GRCoordinateSystemJ2000, ra, dec);
+        GRBurst burst = GRBurst(name, MET, 0., 0., location, locationError);
     
         log << burst.name << " : " << burst.gevCount() << " GeV photons" << endl;
         if (burst.gevCount() < 10) continue;
         
+        drawCDF(burst, 0., 1000., burst.name + ".MeV.cdf");
+        drawCDF(burst, 1000., INFINITY, burst.name + ".GeV.cdf");
+        
         printRanges(burst, 0.05, log);
-        drawPicture(burst, 0.05, burst.name + ".2s.pict", false);
+        drawPicture(burst, 0.05, burst.name + ".2s.pict", true);
         log << endl;
         printRanges(burst, 0.32, log);
-        drawPicture(burst, 0.32, burst.name + ".1s.pict", false);
+        drawPicture(burst, 0.32, burst.name + ".1s.pict", true);
         log << endl;
     }
     

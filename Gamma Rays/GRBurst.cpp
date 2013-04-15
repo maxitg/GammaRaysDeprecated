@@ -9,27 +9,37 @@
 #include <math.h>
 
 #include <fstream>
+#include <sstream>
 
 #include "GRBurst.h"
 #include "GRPhotonStorage.h"
 #include "GRDistribution.h"
 
+bool GRBurst::operator<(GRBurst burst) const {
+    return time < burst.time;
+}
+
 double GRBurst::startTimeLowerBound() {
-    return time + GRBURST_START_TIME_LOWER_BOUND_OFFSET;
+    return time - durationError;
 }
 
 double GRBurst::endTimeUpperBound() {
-    return time + GRBURST_END_TIME_UPPER_BOUND_OFFSET;
+    return time + duration + durationError;
 }
 
 vector <GRPhoton> GRBurst::photons() {
     if (!photonsRetrieved) {
         GRPhotonStorage *storage = NULL;
         storage->getInstance();
-        photons_ = storage->photons(startTimeLowerBound(), endTimeUpperBound(), 0, INFINITY, location);
+        photons_ = storage->photons(startTimeLowerBound(), endTimeUpperBound(), 0, INFINITY, location, locationError);
         photonsRetrieved = true;
     }
     return photons_;
+}
+
+int GRBurst::mevCount() {
+    GRDistribution mevDistribution = photonDistributionFromStart(0., 1000.);
+    return mevDistribution.size();
 }
 
 int GRBurst::gevCount() {
@@ -83,4 +93,12 @@ double GRBurst::maxLengtheningAllowed(float probability, bool *success, bool all
 
 double GRBurst::minLengtheningAllowed(float probability, bool *success, bool allowShift) {
     return parameterLimit(probability, GRDistributionParameterLengthening, GRDistributionObjectiveMinimize, success, allowShift, true);
+}
+
+string GRBurst::description() {
+    ostringstream result;
+    
+    result << fixed << name << " (" << mevCount() << " " << gevCount() << ")" << " at time " << time << " lasting " << duration << " ± " << durationError << " from " << location.description() << " ± " << locationError;
+    
+    return result.str();
 }

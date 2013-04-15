@@ -11,9 +11,9 @@
 #include "GRPhotonStorage.h"
 #include "GRFermiLAT.h"
 
-vector <GRPhoton> GRPhotonStorage::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location) {
+vector <GRPhoton> GRPhotonStorage::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, float locationError) {
     GRFermiLAT fermiLAT;
-    vector <GRPhoton> fermiLATPhotons = fermiLAT.photons(startTime, endTime, minEnergy, maxEnergy, location, GRFermiEventClassTransient, 0.95);
+    vector <GRPhoton> fermiLATPhotons = fermiLAT.photons(startTime, endTime, minEnergy, maxEnergy, location, locationError, GRFermiEventClassTransient, 0.05);
     sort(fermiLATPhotons.begin(), fermiLATPhotons.end());
         
     return fermiLATPhotons;

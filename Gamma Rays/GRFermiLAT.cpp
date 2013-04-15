@@ -51,14 +51,7 @@ size_t GRFermiLAT::saveFermiDataServerResponceToFile(char *ptr, size_t size, siz
     return written;
 }
 
-struct numbers {
-    double startTime;
-    double endTime;
-    float ra;
-    float dec;
-};
-
-char GRFermiLAT::digitHex(int digit) {
+char GRFermiLAT::digitHexCode(int digit) {
     if (digit < 10) return '0'+digit;
     else return 'a'+digit-10;
 }
@@ -84,20 +77,6 @@ string GRFermiLAT::hash(double startTime, double endTime, GRLocation location) {
     CC_SHA256_Update(&context, (unsigned char*)parameters, parametersSize);
     CC_SHA256_Final(md, &context);
     
-    /*
-    CFDataRef dataToEncode = CFDataCreate(kCFAllocatorDefault, md, CC_SHA256_DIGEST_LENGTH);
-    CFErrorRef error = NULL;
-    SecTransformRef encodingRef = SecEncodeTransformCreate(kSecBase64Encoding, &error);
-    SecTransformSetAttribute(encodingRef, kSecTransformInputAttributeName, dataToEncode, &error);
-    CFDataRef resultData = (CFDataRef)SecTransformExecute(encodingRef, &error);
-    CFStringRef str = CFStringCreateFromExternalRepresentation(kCFAllocatorDefault, resultData, kCFStringEncodingUTF8);
-    
-    char base64Pointer[256];
-    CFStringGetCString(str, base64Pointer, 256, kCFStringEncodingUTF8);
-    
-    result = string(base64Pointer);
-    */
-    
 #else
     
     digestLength = SHA256_DIGEST_LENGTH;
@@ -107,35 +86,21 @@ string GRFermiLAT::hash(double startTime, double endTime, GRLocation location) {
     SHA256_Update(&context, (unsigned char*)parameters, parametersSize);
     SHA256_Final(md, &context);
     
-    /*
-    BIO * mem = BIO_new(BIO_s_mem());
-    
-    BIO * b64 = BIO_new(BIO_f_base64());
-    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
-    mem = BIO_push(b64, mem);
-    
-    BIO_write(mem, md, SHA256_DIGEST_LENGTH);
-    BIO_flush(mem);
-    
-    char * base64Pointer;
-    long base64Length = BIO_get_mem_data(mem, &base64Pointer);
-    
-    result = string(base64Pointer, base64Length);
-    
-    BIO_free_all(mem);
-    */
-    
 #endif
     
     result.reserve(digestLength*2);
     for (int i = 0; i < digestLength; i++) {
         unsigned char currentChar = md[i];
-        result.push_back(digitHex(currentChar/16));
-        result.push_back(digitHex(currentChar%16));
+        result.push_back(digitHexCode(currentChar/16));
+        result.push_back(digitHexCode(currentChar%16));
     }
     
     return result;
 }
+
+enum GRFermiLATDownloadPhotonsException {
+    GRFermiLATDownloadPhotonsExceptionTimeBeforeStart = 0,
+    };
 
 string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation location) {
     
@@ -152,7 +117,7 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
     
     cout << "downloading query hash: " << queryHash << endl;
     
-    /*
+     /*
         Input form to send out
      <form method="post" action="/cgi-bin/ssc/LAT/LATDataQuery.cgi" enctype="multipart/form-data">
      <input value="query" name="destination" type="hidden" />
@@ -243,6 +208,7 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
                  CURLFORM_END);
     
     curl = curl_easy_init();
+    
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_URL, "http://fermi.gsfc.nasa.gov/cgi-bin/ssc/LAT/LATDataQuery.cgi");
         curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
@@ -258,6 +224,15 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
     
     string resultsURLLeft = "The results of your query may be found at <a href=\"";
     string resultsURLRight = "\">";
+    if (fermiDataServerResponce.find(resultsURLLeft) == string::npos) {
+        string errorMessageLeft = "Unable to handle query";
+        string errorMessageRight = "</b>";
+        size_t errorMessageIndex = fermiDataServerResponce.find(errorMessageLeft);
+        size_t errorMessageSize = fermiDataServerResponce.find(errorMessageRight, errorMessageIndex) - errorMessageIndex;
+        string errorMessage = fermiDataServerResponce.substr(errorMessageIndex, errorMessageSize);
+        cerr << "Fermi data server error: " << errorMessage << endl;
+        throw GRFermiLATDownloadPhotonsExceptionTimeBeforeStart;
+    }
     size_t resultsURLIndex = fermiDataServerResponce.find(resultsURLLeft) + resultsURLLeft.size();
     size_t resultsURLSize = fermiDataServerResponce.find(resultsURLRight, resultsURLIndex) - resultsURLIndex;
     string resultsURL = fermiDataServerResponce.substr(resultsURLIndex, resultsURLSize);
@@ -273,6 +248,8 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &this->handleFermiDataServerResponce);
             res = curl_easy_perform(curl);
+            if (res != CURLE_OK) printf("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+            
             curl_easy_cleanup(curl);
             
             int progressIndex;
@@ -286,6 +263,7 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
             }
             else {
                 cerr << "Query is in unknown state. Download failed." << endl;
+                cerr << "coordfield=" << coordfield.str().c_str() << " " << "timefield=" << timefield.str().c_str() << endl;
                 cerr << "Query results URL: " << resultsURL << endl;
                 cerr << "--- start of responce ---" << endl;
                 cerr << fermiDataServerResponce << endl;
@@ -440,7 +418,13 @@ void GRFermiLAT::processPhotons(string queryHash) {
 }
 
 GRPsf GRFermiLAT::psf(double startTime, double endTime, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
-    string queryHash = downloadPhotons(startTime, endTime, location);
+    string queryHash;
+    try {
+        queryHash = downloadPhotons(startTime, endTime, location);
+    } catch (GRFermiLATDownloadPhotonsException) {
+        cerr << "too early" << endl;
+    }
+    
     gtltcube(queryHash);
     string psfFilename = gtpsf(queryHash, location, eventClass, conversionType);
     return GRPsf(psfFilename);
@@ -460,52 +444,58 @@ GRFermiConversionType GRFermiLAT::conversinoTypeFromPsfInt(int psfInt) {
     else return GRFermiConversionTypeBack;
 }
 
-vector<GRFermiLATPhoton> GRFermiLAT::psfUnfilteredPhotons(double startTime, double endTime, GRLocation location) {
-    string queryHash = downloadPhotons(startTime, endTime, location);
+vector<GRFermiLATPhoton> GRFermiLAT::allPhotons(double startTime, double endTime, GRLocation location) {
+    string queryHash;
+    try {
+        queryHash = downloadPhotons(startTime, endTime, location);
+    } catch (GRFermiLATDownloadPhotonsException) {
+        cerr << "too early" << endl;
+    }
     processPhotons(queryHash);
     
     vector <GRFermiLATPhoton> photons;
     
     string filename = queryHash + "/timed.fits";
-    fitsfile *psfFile;
+    fitsfile *timedFile;
     int status = 0;
     long nrows;
     
-    fits_open_table(&psfFile, filename.c_str(), READONLY, &status);
-    fits_movabs_hdu(psfFile, 2, NULL, &status);
-    fits_get_num_rows(psfFile, &nrows, &status);
+    fits_open_table(&timedFile, filename.c_str(), READONLY, &status);
+    fits_movabs_hdu(timedFile, 2, NULL, &status);
+    fits_get_num_rows(timedFile, &nrows, &status);
     photons.reserve(nrows);
     
     float readEnergies[nrows];
-    fits_read_col(psfFile, TFLOAT, 1, 1, 1, nrows, 0, readEnergies, 0, &status);
+    fits_read_col(timedFile, TFLOAT, 1, 1, 1, nrows, 0, readEnergies, 0, &status);
     
     float readRas[nrows];
-    fits_read_col(psfFile, TFLOAT, 2, 1, 1, nrows, 0, readRas, 0, &status);
+    fits_read_col(timedFile, TFLOAT, 2, 1, 1, nrows, 0, readRas, 0, &status);
     
     float readDecs[nrows];
-    fits_read_col(psfFile, TFLOAT, 3, 1, 1, nrows, 0, readDecs, 0, &status);
+    fits_read_col(timedFile, TFLOAT, 3, 1, 1, nrows, 0, readDecs, 0, &status);
     
     double readTimes[nrows];
-    fits_read_col(psfFile, TDOUBLE, 10, 1, 1, nrows, 0, readTimes, 0, &status);
+    fits_read_col(timedFile, TDOUBLE, 10, 1, 1, nrows, 0, readTimes, 0, &status);
     
     int readEventClasses[nrows];
-    fits_read_col(psfFile, TINT, 15, 1, 1, nrows, 0, readEventClasses, 0, &status);
+    fits_read_col(timedFile, TINT, 15, 1, 1, nrows, 0, readEventClasses, 0, &status);
     
     int readConversionTypes[nrows];
-    fits_read_col(psfFile, TINT, 16, 1, 1, nrows, 0, readConversionTypes, 0, &status);
+    fits_read_col(timedFile, TINT, 16, 1, 1, nrows, 0, readConversionTypes, 0, &status);
     
-    fits_close_file(psfFile, &status);
+    fits_close_file(timedFile, &status);
     
     if (status) fits_report_error(stderr, status);
     
     for (int i = 0; i < nrows; i++) {
-        photons.push_back(GRFermiLATPhoton(readTimes[i], GRCoordinateSystemJ2000, readRas[i], readDecs[i], readEnergies[i], conversinoTypeFromPsfInt(readConversionTypes[i]), eventClassFromPsfInt(readEventClasses[i])));
+        GRLocation location = GRLocation(GRCoordinateSystemJ2000, readRas[i], readDecs[i]);
+        photons.push_back(GRFermiLATPhoton(readTimes[i], location, readEnergies[i], conversinoTypeFromPsfInt(readConversionTypes[i]), eventClassFromPsfInt(readEventClasses[i])));
     }
     
     return photons;
 }
 
-vector<GRPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass, float confidence) {
+vector<GRPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, float locationError, GRFermiEventClass worstEventClass, float confidence) {
     vector <vector <GRPsf> > psfs;
     psfs.resize(GRFermiEventClassesCount);
     for (int i = 0; i < psfs.size(); i++) psfs[i].reserve(GRFermiConversionTypesCount);
@@ -514,12 +504,12 @@ vector<GRPhoton> GRFermiLAT::photons(double startTime, double endTime, float min
             psfs[i].push_back(psf(startTime, endTime, location, GRFermiEventClasses[i], GRFermiConversionTypes[j]));
         }
     }
-    vector <GRFermiLATPhoton> photons = psfUnfilteredPhotons(startTime, endTime, location);
+    vector <GRFermiLATPhoton> photons = allPhotons(startTime, endTime, location);
     
     vector <GRPhoton> filteredPhotons;
     for (int i = 0; i < photons.size(); i++) {
         if (photons[i].eventClass < worstEventClass) continue;
-        if (photons[i].location.separation(location) > psfs[photons[i].eventClass][photons[i].conversionType].spread(photons[i].energy, confidence)) continue;
+        if (location.separation(photons[i].location) > psfs[photons[i].eventClass][photons[i].conversionType].spread(photons[i].energy, 1-confidence) + locationError) continue;
         filteredPhotons.push_back(GRPhoton(photons[i].time, photons[i].location, photons[i].energy));
     }
 
