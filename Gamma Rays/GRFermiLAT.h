@@ -62,9 +62,13 @@ class GRFermiLAT {
     GRFermiEventClass eventClassFromPsfInt(int psfInt);
     GRFermiConversionType conversinoTypeFromPsfInt(int psfInt);
     
+    vector <GRLocation> pointSources();
+    
+    vector <vector <GRPsf> > psfsForAllEventClassesAndConversionTypes(double startTime, double endTime, GRLocation location);
+    
 public:
     GRPsf psf(double startTime, double endTime, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType);
-    vector <GRPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, float locationError, GRFermiEventClass worstEventClass, float confidence);
+    vector <GRPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass, float confidence, bool filterPointSources = false);
 };
 
 #endif /* defined(__Gamma_Rays__GRFermiLAT__) */

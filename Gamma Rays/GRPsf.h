@@ -17,13 +17,14 @@
 using namespace std;
 
 class GRPsf {
+public:
     vector <float> energies;
     vector <float> angles;
     vector <vector <float> > probabilityDensity;
     
+private:
     int findEnergy(float energy);
 public:
-    GRPsf(string fileName);
     float spread(float energy, float probability);
     float spread(int energyIndex, float probability);
     ostream& writeSpreads(float probability, ostream &stream);

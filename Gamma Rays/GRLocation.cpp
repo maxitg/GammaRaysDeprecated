@@ -12,7 +12,7 @@
 
 #include "GRLocation.h"
 
-GRLocation::GRLocation(GRCoordinateSystem system, float angle0, float angle1) {
+GRLocation::GRLocation(GRCoordinateSystem system, float angle0, float angle1, float error) : error (error){
     if (system == GRCoordinateSystemJ2000) {
         ra = angle0;
         dec = angle1;
@@ -32,9 +32,14 @@ GRLocation::GRLocation(GRCoordinateSystem system, float angle0, float angle1) {
     }
 }
 
+GRLocation::GRLocation(GRCoordinateSystem system, float angle0, float angle1) {
+    *this = GRLocation(system, angle0, angle1, error);
+}
+
 GRLocation::GRLocation() {
     ra = 0.;
     dec = 0.;
+    error = 0.;
 }
 
 float GRLocation::separation(GRLocation location) {
@@ -51,8 +56,13 @@ float GRLocation::separation(GRLocation location) {
     return sep * 180. / M_PI;
 }
 
+bool GRLocation::isSeparated(GRLocation location) {
+    if (separation(location) > error + location.error) return true;
+    else return false;
+}
+
 string GRLocation::description() {
     ostringstream result;
-    result << "(" << ra << " ra, " << dec << " dec)";
+    result << "(" << ra << " ra, " << dec << " dec) ± " << error;
     return result.str();
 }

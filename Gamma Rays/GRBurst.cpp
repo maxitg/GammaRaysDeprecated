@@ -20,18 +20,20 @@ bool GRBurst::operator<(GRBurst burst) const {
 }
 
 double GRBurst::startTimeLowerBound() {
-    return time - durationError;
+    if (startOffset) return time+startOffset;
+    return time + START_TIME_OFFSET;
 }
 
 double GRBurst::endTimeUpperBound() {
-    return time + duration + durationError;
+    if (endOffset) return time+endOffset;
+    return time + END_TIME_OFFSET;
 }
 
 vector <GRPhoton> GRBurst::photons() {
     if (!photonsRetrieved) {
         GRPhotonStorage *storage = NULL;
         storage->getInstance();
-        photons_ = storage->photons(startTimeLowerBound(), endTimeUpperBound(), 0, INFINITY, location, locationError);
+        photons_ = storage->photons(startTimeLowerBound(), endTimeUpperBound(), 0, INFINITY, location);
         photonsRetrieved = true;
     }
     return photons_;
@@ -53,6 +55,11 @@ double GRBurst::passTimeOfPhotonsFraction(float fraction) {
     int index = fraction * burstPhotons.size() - 1;
     if (index == -1) return -INFINITY;
     else return burstPhotons[index].time;
+}
+
+double GRBurst::duration(float fraction) {
+    double sideLeft = (1.-fraction)/2.;
+    return passTimeOfPhotonsFraction(1.-sideLeft) - passTimeOfPhotonsFraction(sideLeft);
 }
 
 GRDistribution GRBurst::photonDistributionFromStart(float minEnergy, float maxEnergy) {
@@ -98,7 +105,7 @@ double GRBurst::minLengtheningAllowed(float probability, bool *success, bool all
 string GRBurst::description() {
     ostringstream result;
     
-    result << fixed << name << " (" << mevCount() << " " << gevCount() << ")" << " at time " << time << " lasting " << duration << " ± " << durationError << " from " << location.description() << " ± " << locationError;
+    result << fixed << name << " (" << mevCount() << " " << gevCount() << ")" << " at time " << time << " lasting (90%) " << duration(0.9) << " from " << location.description();
     
     return result.str();
 }
@@ -115,12 +122,11 @@ string GRBurst::info() {
     result << endl;
     
     result << "time:                " << time << endl;
-    result << "duration:            " << duration <<  " ± " << durationError << endl;
+    result << "duration:            " << duration(0.9) << endl;
     result << "5% passed at offset: " << passTimeOfPhotonsFraction(0.05) - time << endl;
     result << endl;
     
     result << "location:       " << location.description() << endl;
-    result << "location error: " << locationError << endl;
     result << endl;
     
     if (gevCount() < 10) {

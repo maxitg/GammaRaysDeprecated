@@ -22,6 +22,8 @@
 using namespace std;
 
 #define START_TIME_FRACTION (0.05)
+#define START_TIME_OFFSET   (-500)
+#define END_TIME_OFFSET     (2000)
 
 enum GRBurstType {
     GRBurstTypeUndefined = 0,
@@ -33,11 +35,11 @@ class GRBurst {
 public:
     string name;
     double time;
-    double duration;
-    double durationError;
     GRLocation location;
-    float locationError;
     GRBurstType type;
+    
+    double startOffset;
+    double endOffset;
     
 private:
     vector <GRPhoton> photons_;
@@ -49,9 +51,10 @@ private:
 public:
     bool operator<(GRBurst burst) const;
     GRDistribution photonDistributionFromStart(float minEnergy, float maxEnergy);    
-    GRBurst(string name, double time, double duration, double durationError, GRLocation location, float locationError, GRBurstType type = GRBurstTypeUndefined) : name(name), time(time), duration(duration), durationError(durationError), location(location), locationError(locationError), type(type), photonsRetrieved(0) {};
+    GRBurst(string name, double time, GRLocation location, GRBurstType type = GRBurstTypeUndefined) : name(name), time(time), location(location), type(type), photonsRetrieved(0) {};
     
     double passTimeOfPhotonsFraction(float fraction);
+    double duration(float fraction);
     int mevCount();
     int gevCount();
     

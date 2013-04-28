@@ -105,13 +105,7 @@ vector <GRBurst> GRFermiGBM::bursts(double startTime, double endTime) {
     
     double readTimes[nrows];
     fits_read_col(catalogFile, TDOUBLE, 4, 1, 1, nrows, 0, readTimes, 0, &status);
-    
-    double readDurations[nrows];
-    fits_read_col(catalogFile, TDOUBLE, 5, 1, 1, nrows, 0, readDurations, 0, &status);
-    
-    double readDurationErrors[nrows];
-    fits_read_col(catalogFile, TDOUBLE, 6, 1, 1, nrows, 0, readDurationErrors, 0, &status);
-    
+        
     double readStartTimes[nrows];
     fits_read_col(catalogFile, TDOUBLE, 7, 1, 1, nrows, 0, readStartTimes, 0, &status);
     
@@ -125,8 +119,8 @@ vector <GRBurst> GRFermiGBM::bursts(double startTime, double endTime) {
     for (int i = 0; i < nrows; i++) {
         double time = timeFromUnixTime((readTimes[i]-40587.)*86400.) + readStartTimes[i];
         if (time < startTime || time > endTime) continue;
-        GRLocation location = GRLocation(GRCoordinateSystemJ2000, readRas[i], readDecs[i]);
-        bursts.push_back(GRBurst(readNames[i], time, readDurations[i], readDurationErrors[i], location, readLocationErrors[i]));
+        GRLocation location = GRLocation(GRCoordinateSystemJ2000, readRas[i], readDecs[i], readLocationErrors[i]);
+        bursts.push_back(GRBurst(readNames[i], time, location));
     }
     
     for (int i = 0; i < nrows; i++) {

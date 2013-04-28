@@ -14,9 +14,9 @@
 
 using namespace std;
 
-vector <GRPhoton> GRPhotonStorage::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, float locationError) {
+vector <GRPhoton> GRPhotonStorage::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location) {
     GRFermiLAT fermiLAT;
-    vector <GRPhoton> fermiLATPhotons = fermiLAT.photons(startTime, endTime, minEnergy, maxEnergy, location, locationError, GRFermiEventClassTransient, 0.05);
+    vector <GRPhoton> fermiLATPhotons = fermiLAT.photons(startTime, endTime, minEnergy, maxEnergy, location, GRFermiEventClassTransient, 0.05, true);
     sort(fermiLATPhotons.begin(), fermiLATPhotons.end());
         
     return fermiLATPhotons;

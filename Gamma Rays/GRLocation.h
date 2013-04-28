@@ -24,12 +24,15 @@ class GRLocation {
 public:
     float ra;
     float dec;
+    float error;
     
 public:
+    GRLocation(GRCoordinateSystem system, float ra, float dec, float error);
     GRLocation(GRCoordinateSystem system, float ra, float dec);
     GRLocation();
     double operator==(GRLocation location);
     float separation(GRLocation location);
+    bool isSeparated(GRLocation location);
     string description();
 };
 

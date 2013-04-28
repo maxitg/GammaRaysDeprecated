@@ -29,7 +29,7 @@ private:
     void operator=(GRPhotonStorage const&);
     
 public:
-    vector <GRPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, float locationError);
+    vector <GRPhoton> photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location);
 };
 
 #endif /* defined(__Gamma_Rays__GRPhotonStorage__) */

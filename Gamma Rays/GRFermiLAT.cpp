@@ -104,6 +104,8 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
         }
     }
     
+    cout << "query hash: " << queryHash << endl;
+    
     if ((!fileExists(queryHash, "eventList.txt")) || (!fileExists(queryHash, "spacecraft.fits"))) {
         cout << "downloading query hash: " << queryHash << endl;
     } else {
@@ -271,6 +273,10 @@ string GRFermiLAT::downloadPhotons(double startTime, double endTime, GRLocation 
         }
         else if ((progressIndex = (int)responce.rfind("In progress")) != string::npos) {
             cout << "in progress! waiting... (" << responce.substr(progressIndex+38, 6) << ")" << endl;
+            system("sleep 1");
+        }
+        else if (responce.rfind("Query pending") != string::npos) {
+            cout << "in queue! waiting..." << endl;
             system("sleep 1");
         }
         else if (responce.rfind("Query in progress") != string::npos) {
@@ -478,6 +484,31 @@ void GRFermiLAT::processPhotons(string queryHash) {
     }
 }
 
+vector <vector <GRPsf> > GRFermiLAT::psfsForAllEventClassesAndConversionTypes(double startTime, double endTime, GRLocation location) {
+    string queryHash;
+    try {
+        queryHash = downloadPhotons(startTime, endTime, location);
+    } catch (GRFermiLATException e) {
+        if (e == GRFermiLATExceptionFermiDataServerTooEarly) throw GRFermiLATExceptionNoPhotons;
+        else throw e;
+    }
+    
+    gtltcube(queryHash);
+    
+    vector <vector <GRPsf> > psfs;
+    psfs.resize(GRFermiEventClassesCount);
+    for (int i = 0; i < psfs.size(); i++) psfs[i].reserve(GRFermiConversionTypesCount);
+    
+    for (int i = 0; i < GRFermiEventClassesCount; i++) {
+        for (int j = 0; j < GRFermiConversionTypesCount; j++) {
+            string filename = gtpsf(queryHash, location, GRFermiEventClasses[i], GRFermiConversionTypes[j]);
+            psfs[i].push_back(GRPsf(filename));
+        }
+    }
+    
+    return psfs;
+}
+
 GRPsf GRFermiLAT::psf(double startTime, double endTime, GRLocation location, GRFermiEventClass eventClass, GRFermiConversionType conversionType) {
     string queryHash;
     try {
@@ -563,30 +594,73 @@ vector<GRFermiLATPhoton> GRFermiLAT::allPhotons(double startTime, double endTime
     return photons;
 }
 
-vector<GRPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, float locationError, GRFermiEventClass worstEventClass, float confidence) {
-    vector <vector <GRPsf> > psfs;
-    psfs.resize(GRFermiEventClassesCount);
-    for (int i = 0; i < psfs.size(); i++) psfs[i].reserve(GRFermiConversionTypesCount);
-    for (int i = 0; i < GRFermiEventClassesCount; i++) {
-        for (int j = 0; j < GRFermiConversionTypesCount; j++) {
-            try {
-                psfs[i].push_back(psf(startTime, endTime, location, GRFermiEventClasses[i], GRFermiConversionTypes[j]));
-            } catch (GRFermiLATException e) {
-                if (e == GRFermiLATExceptionNoPhotons) {
-                    vector <GRPhoton> emptyResult;
-                    return emptyResult;
-                }
-                else throw e;
-            }
-        }
+vector <GRLocation> GRFermiLAT::pointSources() {    
+    vector <GRLocation> sources;
+    
+    fitsfile *sourcesFile;
+    
+    int status = 0;
+    long nrows;
+    fits_open_table(&sourcesFile, "gll_psc_v08.fit", READONLY, &status);
+    fits_movabs_hdu(sourcesFile, 2, NULL, &status);
+    fits_get_num_rows(sourcesFile, &nrows, &status);
+    sources.reserve(nrows);
+    float readRas[nrows];
+    fits_read_col(sourcesFile, TFLOAT, 2, 1, 1, nrows, 0, readRas, 0, &status);
+    float readDecs[nrows];
+    fits_read_col(sourcesFile, TFLOAT, 3, 1, 1, nrows, 0, readDecs, 0, &status);
+    float readErrors[nrows];
+    fits_read_col(sourcesFile, TFLOAT, 9, 1, 1, nrows, 0, readErrors, 0, &status);
+    
+    fits_close_file(sourcesFile, &status);
+    
+    if (status) fits_report_error(stderr, status);
+    
+    for (int i = 0; i < nrows; i++) {
+        GRLocation location = GRLocation(GRCoordinateSystemJ2000, readRas[i], readDecs[i], readErrors[i]);
+        sources.push_back(location);
     }
+    
+    return sources;
+}
+
+vector<GRPhoton> GRFermiLAT::photons(double startTime, double endTime, float minEnergy, float maxEnergy, GRLocation location, GRFermiEventClass worstEventClass, float confidence, bool filterPointSources) {
+    vector <vector <GRPsf> > psfs;
+    try {
+        psfs = psfsForAllEventClassesAndConversionTypes(startTime, endTime, location);
+    } catch (GRFermiLATException e) {
+        if (e == GRFermiLATExceptionNoPhotons) {
+            vector <GRPhoton> emptyResult;
+            return emptyResult;
+        }
+        else throw e;
+    }
+    
     vector <GRFermiLATPhoton> photons = allPhotons(startTime, endTime, location);
+    
+    for (int i = 0; i < photons.size(); i++) {
+        photons[i].location.error = psfs[photons[i].eventClass][photons[i].conversionType].spread(photons[i].energy, 1-confidence);
+    }
+    
+    vector <GRLocation> sources;
+    if (filterPointSources) {
+        vector <GRLocation> sources = pointSources();
+    }
     
     vector <GRPhoton> filteredPhotons;
     for (int i = 0; i < photons.size(); i++) {
         if (photons[i].eventClass < worstEventClass) continue;
-        if (location.separation(photons[i].location) > psfs[photons[i].eventClass][photons[i].conversionType].spread(photons[i].energy, 1-confidence) + locationError) continue;
-        filteredPhotons.push_back(GRPhoton(photons[i].time, photons[i].location, photons[i].energy));
+        if (location.isSeparated(photons[i].location)) continue;
+        
+        bool fromSource = false;
+        if (filterPointSources) for (int j = 0; j < sources.size(); j++) {
+            if (!sources[j].isSeparated(photons[i].location)) {
+                fromSource = true;
+                break;
+            }
+        }
+        
+        if (!filterPointSources || !fromSource) filteredPhotons.push_back(GRPhoton(photons[i].time, photons[i].location, photons[i].energy));
     }
 
     return filteredPhotons;
