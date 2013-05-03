@@ -28,6 +28,9 @@
 		69A656CF17080D5D0070E84C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CE17080D5C0070E84C /* Security.framework */; };
 		69A656D117080D6B0070E84C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656D017080D6B0070E84C /* Foundation.framework */; };
 		69B46D5D17265D120031176B /* GRFermiLATDataServerQuery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69B46D5A17265D120031176B /* GRFermiLATDataServerQuery.cpp */; };
+		69CE810B172E3DEE00BB9870 /* GRBurst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */; };
+		69CE810C172E46DC00BB9870 /* GRFermiLATPhoton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */; };
+		69CE810D172E652500BB9870 /* GRDistribution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69A0552217115E6D006A9D69 /* GRDistribution.cpp */; };
 		69FE57B3171BDF8C00B3A054 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FE57B2171BDF8C00B3A054 /* main.cpp */; };
 		69FE57B5171BDF8C00B3A054 /* grscan.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 69FE57B4171BDF8C00B3A054 /* grscan.1 */; };
 		69FE57B9171BDFC300B3A054 /* GRDistribution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69A0552217115E6D006A9D69 /* GRDistribution.cpp */; };
@@ -219,23 +222,23 @@
 				69A656D8170839BD0070E84C /* GRPsf.cpp */,
 				699B7319172D567000834C86 /* GRExposureMap.h */,
 				699B7318172D567000834C86 /* GRExposureMap.cpp */,
+				69FF3C7E16FF5EDD00BA79AB /* GRFermiLATPhoton.h */,
+				69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */,
 				69B46D5B17265D120031176B /* GRFermiLATDataServerQuery.h */,
 				69B46D5A17265D120031176B /* GRFermiLATDataServerQuery.cpp */,
-				69FF3C6216FF59FF00BA79AB /* main.cpp */,
-				69A0552217115E6D006A9D69 /* GRDistribution.cpp */,
 				69A0552317115E6D006A9D69 /* GRDistribution.h */,
+				69A0552217115E6D006A9D69 /* GRDistribution.cpp */,
+				69FF3C7216FF5A7C00BA79AB /* GRBurst.h */,
+				69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */,
+				69FF3C6216FF59FF00BA79AB /* main.cpp */,
 				692CB57E171ACB3E00665987 /* GRFermiGBM.cpp */,
 				692CB57F171ACB3E00665987 /* GRFermiGBM.h */,
 				692CB57B171ACA5100665987 /* GRBurstStorage.cpp */,
 				692CB57C171ACA5200665987 /* GRBurstStorage.h */,
-				69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */,
-				69FF3C7216FF5A7C00BA79AB /* GRBurst.h */,
 				69FF3C8016FF68CF00BA79AB /* GRPhotonStorage.cpp */,
 				69FF3C8116FF68CF00BA79AB /* GRPhotonStorage.h */,
 				69FF3C7416FF5A8F00BA79AB /* GRPhoton.cpp */,
 				69FF3C7516FF5A8F00BA79AB /* GRPhoton.h */,
-				69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */,
-				69FF3C7E16FF5EDD00BA79AB /* GRFermiLATPhoton.h */,
 				69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */,
 				69FF3C7816FF5A9A00BA79AB /* GRFermiLAT.h */,
 				69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */,
@@ -364,7 +367,10 @@
 				699B731C172D5EB800834C86 /* GRLocation.cpp in Sources */,
 				699B731D172D5EBB00834C86 /* GRPsf.cpp in Sources */,
 				699B731E172D5EBD00834C86 /* GRExposureMap.cpp in Sources */,
+				69CE810C172E46DC00BB9870 /* GRFermiLATPhoton.cpp in Sources */,
 				699B731F172D5EC000834C86 /* GRFermiLATDataServerQuery.cpp in Sources */,
+				69CE810D172E652500BB9870 /* GRDistribution.cpp in Sources */,
+				69CE810B172E3DEE00BB9870 /* GRBurst.cpp in Sources */,
 				699B7320172D5EC200834C86 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

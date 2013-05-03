@@ -32,18 +32,22 @@ const int GRFermiEventClassesCount = 4;
 const GRFermiConversionType GRFermiConversionTypes[] = {GRFermiConversionTypeFront, GRFermiConversionTypeBack};
 const GRFermiEventClass GRFermiEventClasses[] = {GRFermiEventClassTransient, GRFermiEventClassSource, GRFermiEventClassClean, GRFermiEventClassUltraclean};
 
-class GRFermiLATPhoton : public GRPhoton {
-    friend class GRFermiLAT;
-    
+class GRFermiLATPhoton {
+public:
+    GRLocation location;
+    float energy;
+    double time;
     GRFermiConversionType conversionType;
     GRFermiEventClass eventClass;
     
+private:
     string conversionTypeName();
     string eventClassName();
+    string energyDescription();
     
 public:
-    GRFermiLATPhoton(double time, GRLocation location, float energy, GRFermiConversionType conversionType, GRFermiEventClass fermiEventClass) : GRPhoton(time, location, energy), conversionType(conversionType), eventClass(fermiEventClass) {};
-    
+    GRFermiLATPhoton(double time, GRLocation location, float energy, GRFermiConversionType conversionType, GRFermiEventClass fermiEventClass) : time(time), location(location), energy(energy), conversionType(conversionType), eventClass(fermiEventClass) {};
+    bool operator<(GRFermiLATPhoton right) const;
     string description();
 };
 

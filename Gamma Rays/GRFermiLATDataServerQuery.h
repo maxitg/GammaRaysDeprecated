@@ -62,6 +62,7 @@ public:
     bool isProcessed;
     bool isRead;
     GRFermiLATDataServerQueryError error;
+    string errorDescription;
     
     string hash;
     
@@ -71,6 +72,7 @@ public:
     
 private:
     void calculateHash();
+    void writeStatus();
     
     static size_t saveToString(char *ptr, size_t size, size_t nmemb, string *string);
     static size_t saveToFile(char *ptr, size_t size, size_t nmemv, FILE *file);

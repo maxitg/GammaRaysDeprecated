@@ -15,10 +15,6 @@
 
 #include "GRDistribution.h"
 
-int GRDistribution::size() {
-    return (int)values.size();
-}
-
 vector <GRDistributionCDFPoint> GRDistribution::cdf() {
     vector <GRDistributionCDFPoint> result;
     result.reserve(2*values.size());
@@ -87,128 +83,107 @@ double GRDistribution::kolmogorovSmirnovDistance(double probability, int n1, int
     return z / (sqrt(n) + 0.12 + 0.11/sqrt(n));
 }
 
-float GRDistribution::kolmogorovSmirnovTest(GRDistribution distribution, double shift, double lengthening) {
+//  self is GeV distribution
+//  distribution is MeV distribution
+float GRDistribution::kolmogorovSmirnovTest(GRDistribution distribution, double lengthening, bool plot, ostream &mev, ostream &gev) {
     for (int i = 0; i < distribution.values.size(); i++) {
-        distribution.values[i] += shift;
         distribution.values[i] *= lengthening;
     }
+    distribution.start *= lengthening;
+    distribution.end *= lengthening;
+        
+    double maxDistance = 0.;
     
-    std::ofstream dataMeV("dataMev");
-    std::ofstream dataGeV("dataGeV");
+    vector <int> selfCounts(values.size());
+    vector <int> distributionCounts(distribution.values.size());
+    int selfIndex = 0;
+    int distributionIndex = 0;
+    while (selfIndex != values.size() || distributionIndex != distribution.values.size()) {
+        bool selfIncreased;
+        if (selfIndex == values.size()) {
+            distributionIndex++;
+            selfIncreased = false;
+        } else if (distributionIndex == distribution.values.size()) {
+            selfIndex++;
+            selfIncreased = true;
+        } else if (values[selfIndex] > distribution.values[distributionIndex]) {
+            distributionIndex++;
+            selfIncreased = false;
+        } else {
+            selfIndex++;
+            selfIncreased = true;
+        }
+        
+        if (selfIncreased) {
+            selfCounts[selfIndex-1] = distributionIndex;
+        } else {
+            distributionCounts[distributionIndex-1] = selfIndex;
+        }
+    }
+        
+    double descretePart = (double)distribution.values.size() / (distribution.values.size() + estimatedLinearComponent - distribution.estimatedLinearComponent);
+    double selfPart = estimatedLinearComponent / (distribution.values.size() + estimatedLinearComponent - distribution.estimatedLinearComponent);
+    double distributionPart = -distribution.estimatedLinearComponent / (distribution.values.size() + estimatedLinearComponent - distribution.estimatedLinearComponent);
+    
+    vector <pair<double, double> > mevPoints;
+    vector <pair<double, double> > gevPoints;
     
     for (int i = 0; i < values.size(); i++) {
-        dataMeV << values[i] << " " << (double)i/values.size() << endl;
-    }
-    for (int i = 0; i < distribution.values.size(); i++) {
-        dataGeV << distribution.values[i] << " " << (double)i/distribution.values.size() << endl;
+        bool selfInProgress = (values[i] >= start) && (values[i] <= end);
+        bool distributionInProgress = (values[i] >= distribution.start) && (values[i] <= distribution.end);
+                
+        double selfPoint = (double)i / values.size();
+        double distributionPoint = descretePart * (double)selfCounts[i] / distribution.values.size();
+        if (selfInProgress) distributionPoint += selfPart * (values[i] - start)/(end - start);
+        if (distributionInProgress) distributionPoint += distributionPart * (values[i] - distribution.start) / (distribution.end - distribution.start);
+        
+        if (plot) gevPoints.push_back(make_pair(values[i], selfPoint));
+        if (plot) mevPoints.push_back(make_pair(values[i], distributionPoint));
+        
+        maxDistance = max(maxDistance, abs(selfPoint - distributionPoint));
+        
+        selfPoint = (double)(i+1) / values.size();
+        if (plot) gevPoints.push_back(make_pair(values[i], selfPoint));
+        maxDistance = max(maxDistance, abs(selfPoint - distributionPoint));
     }
     
-    dataMeV.close();
-    dataGeV.close();
-    
-    double maxDistance = 0.;
-    int index;
     for (int i = 0; i < distribution.values.size(); i++) {
-        vector <double>::iterator lowerBound = lower_bound(values.begin(), values.end(), distribution.values[i]);
-        double thisIndex = distance(values.begin(), lowerBound);
-        double thisHeight = thisIndex / values.size();
+        bool selfInProgress = (distribution.values[i] >= start) && (distribution.values[i] <= end);
+        bool distributionInProgress = (distribution.values[i] >= distribution.start) && (distribution.values[i] <= distribution.end);
         
-        double heightLeft = (double)i / distribution.values.size();
-        double heightRight = (double)(i+1) / distribution.values.size();
+        double selfPoint = (double)distributionCounts[i] / values.size();
+        double distributionPoint = descretePart * (double)i / distribution.values.size();
+        if (selfInProgress) distributionPoint += selfPart * (distribution.values[i] - start)/(end - start);
+        if (distributionInProgress) distributionPoint += distributionPart * (distribution.values[i] - distribution.start) / (distribution.end - distribution.start);
         
-        double distanceLeft = thisHeight - heightLeft;
-        if (distanceLeft < 0) distanceLeft = -distanceLeft;
-        double distanceRight = thisHeight - heightRight;
-        if (distanceRight < 0) distanceRight = -distanceRight;
+        if (plot) gevPoints.push_back(make_pair(distribution.values[i], selfPoint));
+        if (plot) mevPoints.push_back(make_pair(distribution.values[i], distributionPoint));
+
+        maxDistance = max(maxDistance, abs(selfPoint - distributionPoint));
+
+        distributionPoint = descretePart * (double)(i+1) / distribution.values.size();
+        if (selfInProgress) distributionPoint += selfPart * (distribution.values[i] - start)/(end - start);
+        if (distributionInProgress) distributionPoint += distributionPart * (distribution.values[i] - distribution.start) / (distribution.end - distribution.start);
         
-        if (distanceLeft > maxDistance) {
-            index = i;
-            maxDistance = distanceLeft;
+        if (plot) mevPoints.push_back(make_pair(distribution.values[i], distributionPoint));
+        
+        maxDistance = max(maxDistance, abs(selfPoint - distributionPoint));
+    }
+    
+    if (plot) {
+        sort(mevPoints.begin(), mevPoints.end());
+        sort(gevPoints.begin(), gevPoints.end());
+        for (int i = 0; i < mevPoints.size(); i++) {
+            mev << mevPoints[i].first << " " << mevPoints[i].second << endl;
         }
-        if (distanceRight > maxDistance) {
-            index = i;
-            maxDistance = distanceRight;
+        for (int i = 0; i < gevPoints.size(); i++) {
+            gev << gevPoints[i].first << " " << gevPoints[i].second << endl;
         }
     }
-        
+    
     return kolmogorovSmirnovProbability(maxDistance, (int)values.size(), (int)distribution.values.size());
 }
 
-double GRDistribution::parameterLimit(GRDistribution distribution, float probability, GRDistributionParameter parameter, GRDistributionObjective objective, bool *success, bool allowShift, bool allowLengthening) {
-    int ia[2*values.size()+1];
-    int ja[2*values.size()+1];
-    double ar[2*values.size()+1];
-    
-    glp_prob *problem = glp_create_prob();
-    glp_set_obj_dir(problem, objective == GRDistributionObjectiveMaximize ? GLP_MIN : GLP_MAX);
-    glp_term_out(0);
-    
-    glp_add_rows(problem, (int)values.size());
-    glp_add_cols(problem, 2);
-    
-    if (allowLengthening) {
-        glp_set_col_bnds(problem, 1, GLP_LO, 0, 0);
-    } else {
-        glp_set_col_bnds(problem, 1, GLP_FX, 1., 1.);
-    }
-    
-    if (parameter == GRDistributionParameterLengthening) {
-        glp_set_obj_coef(problem, 1, 1.);
-    } else {
-        glp_set_obj_coef(problem, 1, 0.);
-    }
-    
-    if (allowShift) {
-        glp_set_col_bnds(problem, 2, GLP_FR, 0, 0);
-    } else {
-        glp_set_col_bnds(problem, 2, GLP_FX, 0., 0.);
-    }
-    
-    if (parameter == GRDistributionParameterShift) {
-        glp_set_obj_coef(problem, 2, 1.);
-    } else {
-        glp_set_obj_coef(problem, 2, 0.);
-    }
-    
-    double maxKolmogorovSmirnovDistance = kolmogorovSmirnovDistance(probability, (int)distribution.values.size(), (int)values.size());
-    
-    for (int i = 0; i < values.size(); i++) {
-        double lowerCDF, upperCDF;
-        lowerCDF = (double)(i+1)/values.size() - maxKolmogorovSmirnovDistance;
-        upperCDF = (double)i/values.size() + maxKolmogorovSmirnovDistance;
-        
-        int leftIndex = floor(lowerCDF*distribution.values.size());
-        int rightIndex = floor(upperCDF*distribution.values.size());
-        
-        if (lowerCDF <= 0. && upperCDF >= 1.) glp_set_row_bnds(problem, i+1, GLP_FR, 0., 0.);
-        else if (lowerCDF <= 0. && upperCDF < 1.) glp_set_row_bnds(problem, i+1, GLP_UP, 0., distribution.values[rightIndex]);
-        else if (lowerCDF > 0. && upperCDF >= 1.) glp_set_row_bnds(problem, i+1, GLP_LO, distribution.values[leftIndex], 0.);
-        else glp_set_row_bnds(problem, i+1, GLP_DB, distribution.values[leftIndex], distribution.values[rightIndex]);
-        
-        ia[2*i+1] = i+1;
-        ia[2*i+2] = i+1;
-        ja[2*i+1] = 1;
-        ja[2*i+2] = 2;
-        
-        ar[2*i+1] = values[i];
-        ar[2*i+2] = 1.;
-        
-        //cout << (leftIndex >= 0 ? distribution.values[leftIndex] : -INFINITY) << " < " << values[i] << " * len + 1 * shift < " << (rightIndex < distribution.values.size() ? distribution.values[rightIndex] : INFINITY) << endl;
-    }
-    
-    glp_load_matrix(problem, 2*(int)values.size(), ia, ja, ar);
-    glp_simplex(problem, NULL);
-    
-    if (success) {
-        if (glp_get_status(problem) == GLP_NOFEAS) *success = false;
-        else *success = true;
-    }
-    
-    double lengthening = 1./glp_get_col_prim(problem, 1);
-    double shift = -glp_get_col_prim(problem, 2);
-    
-    glp_delete_prob(problem);
-    glp_free_env();
-        
-    return parameter == GRDistributionParameterShift ? shift : lengthening;
+pair<double, double> GRDistribution::lengtheningLimits(GRDistribution distribution, float probability, bool *success) {
+    return make_pair(0., 0.);
 }

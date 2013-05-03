@@ -78,6 +78,28 @@ void GRFermiLATDataServerQuery::calculateHash() {
 void GRFermiLATDataServerQuery::init() {
     error = GRFermiLATDataServerQueryErrorNotDownloaded;
     calculateHash();
+    
+    ifstream status((hash + "/status").c_str());
+    int statusCode = 0;
+    if (status.is_open()) {
+        status >> statusCode;
+        status.close();
+    }
+    
+    if (statusCode == 0) error = GRFermiLATDataServerQueryErrorNotDownloaded;
+    else if (statusCode == 1) error = GRFermiLATDataServerQueryErrorNotProcessed;
+    else if (statusCode == 2) error = GRFermiLATDataServerQueryErrorNotRead;
+    else error = GRFermiLATDataServerQueryErrorNotDownloaded;
+}
+
+void GRFermiLATDataServerQuery::writeStatus() {
+    ofstream status((hash + "/status").c_str());
+    
+    if (error == GRFermiLATDataServerQueryErrorNotProcessed) status << 1;
+    else if (error == GRFermiLATDataServerQueryErrorNotRead) status << 2;
+    else status << 0;
+    
+    status.close();
 }
 
 size_t GRFermiLATDataServerQuery::saveToString(char *ptr, size_t size, size_t nmemb, string *string) {
@@ -208,6 +230,7 @@ void GRFermiLATDataServerQuery::download() {
             error = GRFermiLATDataServerQueryErrorFermiDataServerTooEarly;
         } else {
             error = GRFermiLATDataServerQueryErrorFermiDataServerUnknown;
+            errorDescription = errorMessage;
         }
         
         return;
@@ -248,6 +271,7 @@ void GRFermiLATDataServerQuery::download() {
             sleep(1);
         } else {
             error = GRFermiLATDataServerQueryErrorFermiDataServerUnknown;
+            errorDescription = resultsURL;
             return;
         }
     }
@@ -299,9 +323,16 @@ void GRFermiLATDataServerQuery::download() {
         if (filenames[i].find("_EV") != string::npos) eventList << hash + "/" + filenames[i] << endl;
         else if (filenames[i].find("_SC") != string::npos) {
             if (symlink(filenames[i].c_str(), (hash + "/spacecraft.fits").c_str()) == -1) {
-                error = GRFermiLATDataServerQueryErrorSymlink;
-                eventList.close();
-                return;
+                if (errno == EEXIST) {
+                    unlink((hash + "/spacecraft.fits").c_str());
+                    symlink(filenames[i].c_str(), (hash + "/spacecraft.fits").c_str());
+                }
+                if (errno != EEXIST && errno != 0) {
+                    error = GRFermiLATDataServerQueryErrorSymlink;
+                    errorDescription = "Failed to symlink from " + filenames[i] + " to " + hash + "/spacecraft.fits : ";
+                    eventList.close();
+                    return;
+                }
             }
         }
         else {
@@ -314,6 +345,7 @@ void GRFermiLATDataServerQuery::download() {
     
     error = GRFermiLATDataServerQueryErrorNotProcessed;
     isDownloaded = true;
+    writeStatus();
     
     return;
 }
@@ -451,21 +483,23 @@ void GRFermiLATDataServerQuery::process() {
         return;
     }
     
+#pragma omp for
     for (int i = 0; i < GRFermiEventClassesCount; i++) {
         for (int j = 0; j < GRFermiConversionTypesCount; j++) {
             if (gtexpcube(GRFermiEventClasses[i], GRFermiConversionTypes[j]) != 0) {
                 error = GRFermiLATDataServerQueryErrorGtexpcube2Failed;
-                return;
             }
             if (gtpsf(GRFermiEventClasses[i], GRFermiConversionTypes[j]) != 0) {
                 error = GRFermiLATDataServerQueryErrorGtpsfFailed;
-                return;
             }
         }
     }
     
+    if (error == GRFermiLATDataServerQueryErrorGtexpcube2Failed || error == GRFermiLATDataServerQueryErrorGtpsfFailed) return;
+    
     error = GRFermiLATDataServerQueryErrorNotRead;
     isProcessed = true;
+    writeStatus();
 }
 
 void GRFermiLATDataServerQuery::readPhotons() {
@@ -479,22 +513,29 @@ void GRFermiLATDataServerQuery::readPhotons() {
     fits_get_num_rows(timedFile, &nrows, &status);
     events.reserve(nrows);
     
-    float readEnergies[nrows];
+    float *readEnergies;
+    float *readRas;
+    float *readDecs;
+    double *readTimes;
+    int *readEventClasses;
+    int *readConversionTypes;
+    readEnergies = new float[nrows];
+    readRas = new float[nrows];
+    readDecs = new float[nrows];
+    readTimes = new double[nrows];
+    readEventClasses = new int[nrows];
+    readConversionTypes = new int[nrows];
+    
     fits_read_col(timedFile, TFLOAT, 1, 1, 1, nrows, 0, readEnergies, 0, &status);
     
-    float readRas[nrows];
     fits_read_col(timedFile, TFLOAT, 2, 1, 1, nrows, 0, readRas, 0, &status);
     
-    float readDecs[nrows];
     fits_read_col(timedFile, TFLOAT, 3, 1, 1, nrows, 0, readDecs, 0, &status);
     
-    double readTimes[nrows];
     fits_read_col(timedFile, TDOUBLE, 10, 1, 1, nrows, 0, readTimes, 0, &status);
     
-    int readEventClasses[nrows];
     fits_read_col(timedFile, TINT, 15, 1, 1, nrows, 0, readEventClasses, 0, &status);
     
-    int readConversionTypes[nrows];
     fits_read_col(timedFile, TINT, 16, 1, 1, nrows, 0, readConversionTypes, 0, &status);
     
     fits_close_file(timedFile, &status);
@@ -516,6 +557,13 @@ void GRFermiLATDataServerQuery::readPhotons() {
         
         events.push_back(GRFermiLATPhoton(readTimes[i], location, readEnergies[i], conversionType, eventClass));
     }
+    
+    delete readEnergies;
+    delete readRas;
+    delete readDecs;
+    delete readTimes;
+    delete readEventClasses;
+    delete readConversionTypes;
 }
 
 void GRFermiLATDataServerQuery::readPsfs() {
@@ -596,7 +644,7 @@ void GRFermiLATDataServerQuery::readExposureMaps() {
                     if (xpixel < 0) xpixel += 360;
                     exposureMaps[i][j].exposures[k][ra].resize(180);
                     for (int dec = 0; dec < 180; dec++) {
-                        exposureMaps[i][j].exposures[k][ra][dec] = readExposures[xpixel + (179-dec)*360 + k*180*360];
+                        exposureMaps[i][j].exposures[k][ra][dec] = readExposures[xpixel + dec*360 + k*180*360];
                     }
                 }
             }

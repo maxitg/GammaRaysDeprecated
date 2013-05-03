@@ -13,186 +13,188 @@
 
 #include "GRBurst.h"
 #include "GRPhotonStorage.h"
-#include "GRDistribution.h"
 
-bool GRBurst::operator<(GRBurst burst) const {
-    return time < burst.time;
-}
+#define TIME_EXTENTION_FACTOR 1.5
+#define PHOTONS_QUALITY       0.95
+#define LENGTHENING_MIN       0.1
+#define LENGTHENING_MAX       10.
+#define LENGTHENING_STEP      1.001
 
-double GRBurst::startTimeLowerBound() {
-    if (startOffset) return time+startOffset;
-    return time + START_TIME_OFFSET;
-}
-
-double GRBurst::endTimeUpperBound() {
-    if (endOffset) return time+endOffset;
-    return time + END_TIME_OFFSET;
-}
-
-vector <GRPhoton> GRBurst::photons() {
-    if (!photonsRetrieved) {
-        GRPhotonStorage *storage = NULL;
-        storage->getInstance();
-        photons_ = storage->photons(startTimeLowerBound(), endTimeUpperBound(), 0, INFINITY, location);
-        photonsRetrieved = true;
-    }
-    return photons_;
-}
-
-int GRBurst::mevCount() {
-    GRDistribution mevDistribution = photonDistributionFromStart(0., 1000.);
-    return mevDistribution.size();
-}
-
-int GRBurst::gevCount() {
-    GRDistribution gevDistribution = photonDistributionFromStart(1000., INFINITY);
-    return gevDistribution.size();
-}
-
-double GRBurst::passTimeOfPhotonsFraction(float fraction) {
-    vector <GRPhoton> burstPhotons = photons();
+void GRBurst::init() {    
+    double duration = (endOffset - startOffset) * TIME_EXTENTION_FACTOR;
+    double center = time + (startOffset + endOffset) / 2.;
+    double startTime = center - duration/2.;
+    double endTime = center + duration/2.;
     
-    int index = fraction * burstPhotons.size() - 1;
-    if (index == -1) return -INFINITY;
-    else return burstPhotons[index].time;
-}
-
-double GRBurst::duration(float fraction) {
-    double sideLeft = (1.-fraction)/2.;
-    return passTimeOfPhotonsFraction(1.-sideLeft) - passTimeOfPhotonsFraction(sideLeft);
-}
-
-GRDistribution GRBurst::photonDistributionFromStart(float minEnergy, float maxEnergy) {
-    vector <GRPhoton> allPhotons = photons();
-    vector <double> times;
-    double startTime = passTimeOfPhotonsFraction(START_TIME_FRACTION);
+    query.startTime = startTime;
+    query.endTime = endTime;
+    query.location = location;
     
-    for (int i = 0; i < allPhotons.size(); i++) {
-        if (allPhotons[i].energy >= minEnergy && allPhotons[i].energy < maxEnergy) times.push_back(allPhotons[i].time - startTime);
+    query.init();
+    
+    duration = duration * 100;
+    endTime = startTime;
+    startTime = startTime - duration;
+    
+    backgroundQuery.startTime = startTime;
+    backgroundQuery.endTime = endTime;
+    backgroundQuery.location = location;
+    
+    backgroundQuery.init();
+    
+    error = GRBurstErrorNotDownloaded;
+}
+
+void GRBurst::download() {
+    if (query.error == GRFermiLATDataServerQueryErrorNotDownloaded) query.download();
+    if (!query.error == GRFermiLATDataServerQueryErrorNotProcessed && !query.error == GRFermiLATDataServerQueryErrorNotRead && !query.error == GRFermiLATDataServerQueryErrorOk) {
+        error = GRBurstErrorQueryError;
+        errorDescription = query.errorDescription;
+        return;
     }
     
-    return GRDistribution(times);
-}
+    if (backgroundQuery.error == GRFermiLATDataServerQueryErrorNotDownloaded) backgroundQuery.download();
+    if (!backgroundQuery.error == GRFermiLATDataServerQueryErrorNotProcessed && !backgroundQuery.error == GRFermiLATDataServerQueryErrorNotRead && !backgroundQuery.error == GRFermiLATDataServerQueryErrorOk) {
+        error = GRBurstErrorBackgroundQueryError;
+        errorDescription = backgroundQuery.errorDescription;
+        return;
+    }
 
-float GRBurst::gevTransformHypothesisProbability(double shift, double lengthening) {
-    GRDistribution mevDistribution = photonDistributionFromStart(0., 1000.);
-    GRDistribution gevDistribution = photonDistributionFromStart(1000., INFINITY);
-    return mevDistribution.kolmogorovSmirnovTest(gevDistribution, shift, lengthening);
-}
-
-double GRBurst::parameterLimit(float probability, GRDistributionParameter parameter, GRDistributionObjective objective, bool *success, bool allowShift, bool allowLengthening) {
-    GRDistribution mevDistribution = photonDistributionFromStart(0., 1000.);
-    GRDistribution gevDistribution = photonDistributionFromStart(1000., INFINITY);
-    return mevDistribution.parameterLimit(gevDistribution, probability, parameter, objective, success, allowShift, allowLengthening);
-}
-
-double GRBurst::maxShiftAllowed(float probability, bool *success, bool allowLengthening) {
-    return parameterLimit(probability, GRDistributionParameterShift, GRDistributionObjectiveMaximize, success, true, allowLengthening);
-}
-
-double GRBurst::minShiftAllowed(float probability, bool *success, bool allowLengthening) {
-    return parameterLimit(probability, GRDistributionParameterShift, GRDistributionObjectiveMinimize, success, true, allowLengthening);
-}
-
-double GRBurst::maxLengtheningAllowed(float probability, bool *success, bool allowShift) {
-    return parameterLimit(probability, GRDistributionParameterLengthening, GRDistributionObjectiveMaximize, success, allowShift, true);
-}
-
-double GRBurst::minLengtheningAllowed(float probability, bool *success, bool allowShift) {
-    return parameterLimit(probability, GRDistributionParameterLengthening, GRDistributionObjectiveMinimize, success, allowShift, true);
-}
-
-string GRBurst::description() {
-    ostringstream result;
+    error = GRBurstErrorNotProcessed;
     
-    result << fixed << name << " (" << mevCount() << " " << gevCount() << ")" << " at time " << time << " lasting (90%) " << duration(0.9) << " from " << location.description();
-    
-    return result.str();
 }
 
-string GRBurst::info() {
-    ostringstream result;
-    result << fixed;
-    
-    result << name << endl;
-    result << endl;
-    
-    result << "< GeV photons count: " << mevCount() << endl;
-    result << "> GeV photons count: " << gevCount() << endl;
-    result << endl;
-    
-    result << "time:                " << time << endl;
-    result << "duration:            " << duration(0.9) << endl;
-    result << "5% passed at offset: " << passTimeOfPhotonsFraction(0.05) - time << endl;
-    result << endl;
-    
-    result << "location:       " << location.description() << endl;
-    result << endl;
-    
-    if (gevCount() < 10) {
-        result << "Too few > GeV photons. Model analysis disabled." << endl << endl;
-        return result.str();
+void GRBurst::process() {
+    if (query.error == GRFermiLATDataServerQueryErrorNotProcessed) query.process();
+    if (!query.error == GRFermiLATDataServerQueryErrorNotRead && !query.error == GRFermiLATDataServerQueryErrorOk) {
+        error = GRBurstErrorQueryError;
+        errorDescription = query.errorDescription;
+        return;
     }
     
-    bool success;
-    int sigmaValues[5] = {1, 2, 3, 4, 5};
+    if (backgroundQuery.error == GRFermiLATDataServerQueryErrorNotProcessed) backgroundQuery.process();
+    if (!backgroundQuery.error == GRFermiLATDataServerQueryErrorNotRead && !backgroundQuery.error == GRFermiLATDataServerQueryErrorOk) {
+        error = GRBurstErrorBackgroundQueryError;
+        errorDescription = backgroundQuery.errorDescription;
+        return;
+    }
+    
+    error = GRBurstErrorNotRead;
+
+}
+
+void GRBurst::calculateBackground() {
+    double mevExpectationValue = 0.;
+    double gevExpectationValue = 0.;
+    
+    vector <GRFermiLATPhoton> *backgroundPhotonLists[2] = {&mevBackgroundPhotons, &gevBackgroundPhotons};
+    double *backgroundEstimationList[2] = {&mevExpectationValue, &gevExpectationValue};
+    
+    for (int i = 0; i < 2; i++) {
+        *(backgroundEstimationList[i]) = 0.;
+        for (int j = 0; j < (*(backgroundPhotonLists[i])).size(); j++) {
+            GRFermiLATPhoton photon = (*(backgroundPhotonLists[i]))[j];
+            double grbExposure = query.exposureMaps[photon.eventClass][photon.conversionType].exposure(photon.energy, photon.location);
+            double backgroundExposure = backgroundQuery.exposureMaps[photon.eventClass][photon.conversionType].exposure(photon.energy, photon.location);
+            *(backgroundEstimationList[i]) += grbExposure / backgroundExposure;
+        }
+    }
+    
+    cout << "estimations: " << endl;
+    cout << mevExpectationValue << " " << mevPhotons.size() << endl;
+    cout << gevExpectationValue << " " << gevPhotons.size() << endl;
+    
+    mevDistribution.estimatedLinearComponent = mevExpectationValue;
+    mevDistribution.start = query.startTime - (time + startOffset);
+    mevDistribution.end = query.endTime - (time + startOffset);
+    
+    gevDistribution.estimatedLinearComponent = gevExpectationValue;
+    gevDistribution.start = query.startTime - (time + startOffset);
+    gevDistribution.end = query.endTime - (time + startOffset);
+    
+}
+
+void GRBurst::read() {
+    if (query.error == GRFermiLATDataServerQueryErrorNotRead) query.read();
+    if (query.error != GRFermiLATDataServerQueryErrorOk) {
+        error = GRBurstErrorQueryError;
+        errorDescription = query.errorDescription;
+        return;
+    }
+    
+    if (backgroundQuery.error == GRFermiLATDataServerQueryErrorNotRead) backgroundQuery.read();
+    if (backgroundQuery.error != GRFermiLATDataServerQueryErrorOk) {
+        error = GRBurstErrorBackgroundQueryError;
+        errorDescription = backgroundQuery.errorDescription;
+        return;
+    }
+    
+    if (query.psfs[GRFermiEventClassSource][GRFermiConversionTypeBack].spread(1000.f, 0.95) > 90.) {
+        cout << "spreaded" << endl;
+        return;
+    }
+    
+    for (int i = 0; i < query.events.size(); i++) {
+        GRFermiLATPhoton photon = query.events[i];
+        photon.location.error = query.psfs[photon.eventClass][photon.conversionType].spread(photon.energy, PHOTONS_QUALITY);
+        //if (photon.eventClass == GRFermiEventClassTransient) continue;
+        if (location.isSeparated(photon.location)) continue;
+        
+        if (photon.energy < 1000.) mevPhotons.push_back(photon);
+        else gevPhotons.push_back(photon);
+    }
+    sort(mevPhotons.begin(), mevPhotons.end());
+    sort(mevBackgroundPhotons.begin(), mevBackgroundPhotons.end());
+    
+    for (int i = 0; i < backgroundQuery.events.size(); i++) {
+        GRFermiLATPhoton photon = backgroundQuery.events[i];
+        photon.location.error = backgroundQuery.psfs[photon.eventClass][photon.conversionType].spread(photon.energy, PHOTONS_QUALITY);
+        //if (photon.eventClass == GRFermiEventClassTransient) continue;
+        if (location.isSeparated(photon.location)) continue;
+        
+        if (photon.energy < 1000.) mevBackgroundPhotons.push_back(photon);
+        else gevBackgroundPhotons.push_back(photon);
+    }
+    sort(gevPhotons.begin(), gevPhotons.end());
+    sort(gevBackgroundPhotons.begin(), gevBackgroundPhotons.end());
+    
+    calculateBackground();
+    
+    for (int i = 0; i < mevPhotons.size(); i++) {
+        mevDistribution.values.push_back(mevPhotons[i].time - (time + startOffset));
+    }
+    
+    for (int i = 0; i < gevPhotons.size(); i++) {
+        gevDistribution.values.push_back(gevPhotons[i].time - (time + startOffset));
+    }
+        
+    error = GRBurstErrorOk;
+}
+
+void GRBurst::evaluate() {
     double probabilityValues[5];
     for (int i = 0; i < 5; i++) {
-        probabilityValues[i] = 1-erf((double)sigmaValues[i]/sqrt(2.));
+        probabilityValues[i] = 1-erf((double)(i+1)/sqrt(2.));
+        minLengthening[i] = INFINITY;
+        maxLengthening[i] = 0.;
     }
     
-    result << "Shift Lengthening Model" << endl;
-    for (int i = 0; i < 5; i++) {
-        result << sigmaValues[i] << " sigma:" << endl;
-        double minShift = minShiftAllowed(probabilityValues[i], &success, true);
-        double maxShift = maxShiftAllowed(probabilityValues[i], &success, true);
-        double avgShift = (maxShift + minShift) / 2.;
-        double sprShift = (maxShift - minShift) / 2.;
-        double minLengthening = minLengtheningAllowed(probabilityValues[i], &success, true);
-        double maxLengthening = maxLengtheningAllowed(probabilityValues[i], &success, true);
-        double avgLengthening = (maxLengthening + minLengthening) / 2.;
-        double sprLengthening = (maxLengthening - minLengthening) / 2.;
-        if (!success) {
-            result << "exterminated!" << endl;
-        } else {
-            result << "shift:       " << avgShift << " ± " << sprShift << endl;
-            result << "lengthening: " << avgLengthening << " ± " << sprLengthening << endl;
+    for (double value = LENGTHENING_MIN; value <= LENGTHENING_MAX; value *= LENGTHENING_STEP) {
+        lengtheningValues.push_back(value);
+        lengtheningProbabilities.push_back(gevDistribution.kolmogorovSmirnovTest(mevDistribution, value));
+        
+        for (int i = 0; i < 5; i++) {
+            if (lengtheningProbabilities[lengtheningProbabilities.size()-1] < probabilityValues[i]) continue;
+            minLengthening[i] = min(value, minLengthening[i]);
+            maxLengthening[i] = max(value, maxLengthening[i]);
         }
-        result << endl;
     }
-    result << endl;
     
-    result << "Shift Model" << endl;
-    for (int i = 0; i < 5; i++) {
-        result << sigmaValues[i] << " sigma:" << endl;
-        double minShift = minShiftAllowed(probabilityValues[i], &success, false);
-        double maxShift = maxShiftAllowed(probabilityValues[i], &success, false);
-        double avgShift = (maxShift + minShift) / 2.;
-        double sprShift = (maxShift - minShift) / 2.;
-        if (!success) {
-            result << "exterminated!" << endl;
-        } else {
-            result << "shift: " << avgShift << " ± " << sprShift << endl;
-        }
-        result << endl;
-    }
-    result << endl;
+    ofstream mev("mev");
+    ofstream gev("gev");
+    gevDistribution.kolmogorovSmirnovTest(mevDistribution, 1., true, mev, gev);
+    mev.close();
+    gev.close();
     
-    result << "Lengthening Model" << endl;
-    for (int i = 0; i < 5; i++) {
-        result << sigmaValues[i] << " sigma:" << endl;
-        double minLengthening = minLengtheningAllowed(probabilityValues[i], &success, false);
-        double maxLengthening = maxLengtheningAllowed(probabilityValues[i], &success, false);
-        double avgLengthening = (maxLengthening + minLengthening) / 2.;
-        double sprLengthening = (maxLengthening - minLengthening) / 2.;
-        if (!success) {
-            result << "exterminated!" << endl;
-        } else {
-            result << "lengthening: " << avgLengthening << " ± " << sprLengthening << endl;
-        }
-        result << endl;
-    }
-    result << endl;
-    
-    return result.str();
+    cout << endl;
 }

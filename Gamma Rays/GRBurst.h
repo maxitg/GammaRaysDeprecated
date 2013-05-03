@@ -15,62 +15,62 @@
 #include <vector>
 #include <string>
 
-#include "GRPhoton.h"
-#include "GRLocation.h"
+#include "GRFermiLATDataServerQuery.h"
 #include "GRDistribution.h"
 
 using namespace std;
 
-#define START_TIME_FRACTION (0.05)
-#define START_TIME_OFFSET   (-500)
-#define END_TIME_OFFSET     (2000)
-
-enum GRBurstType {
-    GRBurstTypeUndefined = 0,
-    GRBurstTypeShort = 1,
-    GRBurstTypeLong = 2
+enum GRBurstError {
+    GRBurstErrorOk,
+    GRBurstErrorNotDownloaded,
+    GRBurstErrorNotProcessed,
+    GRBurstErrorNotRead,
+    
+    GRBurstErrorQueryError,
+    GRBurstErrorBackgroundQueryError
     };
 
 class GRBurst {
 public:
+    GRBurstError error;
+    string errorDescription;
+    
     string name;
     double time;
     GRLocation location;
-    GRBurstType type;
     
     double startOffset;
     double endOffset;
+        
+public:
+    GRFermiLATDataServerQuery backgroundQuery;
+    GRFermiLATDataServerQuery query;
     
-private:
-    vector <GRPhoton> photons_;
-    bool photonsRetrieved;
+    vector <GRFermiLATPhoton> mevPhotons;
+    vector <GRFermiLATPhoton> mevBackgroundPhotons;
     
-    double startTimeLowerBound();
-    double endTimeUpperBound();
+    vector <GRFermiLATPhoton> gevPhotons;
+    vector <GRFermiLATPhoton> gevBackgroundPhotons;
     
 public:
-    bool operator<(GRBurst burst) const;
-    GRDistribution photonDistributionFromStart(float minEnergy, float maxEnergy);    
-    GRBurst(string name, double time, GRLocation location, GRBurstType type = GRBurstTypeUndefined) : name(name), time(time), location(location), type(type), photonsRetrieved(0) {};
+    GRDistribution mevDistribution;
+    GRDistribution gevDistribution;
     
-    double passTimeOfPhotonsFraction(float fraction);
-    double duration(float fraction);
-    int mevCount();
-    int gevCount();
+public:
+    double minLengthening[5];
+    double maxLengthening[5];
+    vector <float> lengtheningValues;
+    vector <float> lengtheningProbabilities;
     
-    float gevTransformHypothesisProbability(double shift, double lengthening);
+private:
+    void calculateBackground();
     
-    double parameterLimit(float probability, GRDistributionParameter parameter, GRDistributionObjective objective, bool *success, bool allowShift = true, bool allowLengthening = true);
-    
-    double maxShiftAllowed(float probability, bool *success, bool allowLengthening = true);
-    double minShiftAllowed(float probability, bool *success, bool allowLengthening = true);
-    double maxLengtheningAllowed(float probability, bool *success, bool allowShift = true);
-    double minLengtheningAllowed(float probability, bool *success, bool allowShift = true);
-        
-    vector <GRPhoton> photons();
-    
-    string description();
-    string info();
+public:
+    void init();
+    void download();
+    void process();
+    void read();
+    void evaluate();
 };
 
 #endif /* defined(__Gamma_Rays__GRBurst__) */
