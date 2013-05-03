@@ -10,156 +10,101 @@
 
 #include <math.h>
 #include <string>
-#include <sstream>
 #include <iostream>
-#include <sys/stat.h>
 
 #include "GRBurst.h"
 
 using namespace std;
 
-void drawPicture(GRBurst burst, double probability, string filename, bool chat = false, double lengtheningSteps = 100, double shiftSteps = 100) {
-    struct stat buf;
-    if (stat(filename.c_str(), &buf) == 0) return;
-    
-    bool success;
-    double minL = burst.minLengtheningAllowed(probability, &success);
-    double maxL = burst.maxLengtheningAllowed(probability, &success);
-    double sprL = exp((log(maxL) - log(minL)) * 0.1);
-    minL = minL/sprL;
-    maxL = maxL*sprL;
-    double stepL = (maxL - minL)/lengtheningSteps;
-    double minS = burst.minShiftAllowed(probability, &success);
-    double maxS = burst.maxShiftAllowed(probability, &success);
-    double sprS = (maxS - minS) * 0.1;
-    minS = minS - sprS;
-    maxS = maxS + sprS;
-    double stepS = (maxS - minS)/shiftSteps;
-    
-    if (minL == -INFINITY || minS == -INFINITY || maxL == INFINITY || maxS == INFINITY) {
-        if (chat) cout << "infinite ranges. cannot draw" << endl;
-        return;
-    }
-    
-    if (!success) {
-        if (chat) cout << "too low to draw" << endl;
-        return;
-    }
-    
-    ofstream dens(filename.c_str());
-    
-    for (double lengthening = minL; lengthening <= maxL; lengthening += stepL) {
-        if (chat) cout << "drawing " << lengthening << " ..." << endl;
-        for (double shift = minS; shift <= maxS; shift += stepS) {
-            double prob = burst.gevTransformHypothesisProbability(shift, lengthening);
-            dens << lengthening << " " << shift << " " << (prob > probability ? prob : 0) << endl;
-        }
-    }
-    dens.close();
+double probability(double sigma) {
+    return 1-erf((double)sigma/sqrt(2.));
 }
 
-void drawCDF(GRBurst burst, float minEnergy, float maxEnergy, string filename) {
-    ofstream cdfFile(filename.c_str());
-    vector <GRDistributionCDFPoint> points = burst.photonDistributionFromStart(minEnergy, maxEnergy).cdf();
-    for (int i = 0; i < points.size(); i++) {
-        cdfFile << points[i].value << " " << points[i].probability << endl;
+double sigma(double prob) {
+    if (prob == 0.) return INFINITY;
+    if (prob == 1.) return 0.;
+    
+    double sigmaLow = 0.;
+    double sigmaHigh = 1.;
+    while (probability(sigmaHigh) > prob) sigmaHigh *= 2.;
+    
+    while (sigmaHigh - sigmaLow > 0.01) {
+        if (probability((sigmaLow + sigmaHigh)/2.) > prob) sigmaLow = (sigmaLow + sigmaHigh)/2.;
+        else sigmaHigh = (sigmaLow + sigmaHigh)/2.;
     }
-    cdfFile.close();
-}
-
-void printException(GRFermiLATException e) {
-    if (e == GRFermiLATExceptionMkdir) cerr << "mkdir failed" << endl;
-    else if (e == GRFermiLATExceptionFileOpen) cerr << "file open failed" << endl;
-    else if (e == GRFermiLATExceptionSymlink) cerr << "symlink failed" << endl;
-    else if (e == GRFermiLATExceptionCurlInit) cerr << "curl initialization failed" << endl;
-    else if (e == GRFermiLATExceptionCurlPerform) cerr << "curl request failed" << endl;
-    else if (e == GRFermiLATExceptionFermiDataServerTooEarly) cerr << "photons requested are before Fermi LAT launch date" << endl;
-    else if (e == GRFermiLATExceptionFermiDataServerUnknown) cerr << "unknown error from Fermi data server" << endl;
-    else if (e == GRFermiLATExceptionFermiDataServerQuiryStateUnknown) cerr << "unknown state of Fermi data server query" << endl;
-    else if (e == GRFermiLATExceptionFermiDataServerEmptyResults) cerr << "empty results from Fermi data server" << endl;
-    else if (e == GRFermiLATExceptionFermiDataServerUnknownFile) cerr << "unknown file type recieved from Fermi data server" << endl;
-    else if (e == GRFermiLATExceptionNoEventListFile) cerr << "eventList.txt not found" << endl;
-    else if (e == GRFermiLATExceptionNoFilteredFile) cerr << "filtered.fits not found" << endl;
-    else if (e == GRFermiLATExceptionNoSpacecraftFile) cerr << "spacecraft.fits not found" << endl;
-    else if (e == GRFermiLATExceptionNoLtCubeFile) cerr << "ltcube.fits not found" << endl;
-    else if (e == GRFermiLATExceptionNoPhotons) cerr << "no photons match the query" << endl;
-    else cerr << "unknown exception occured" << endl;
+    
+    return (sigmaLow + sigmaHigh) / 2.;
 }
 
 int main(int argc, const char * argv[])
-{    
-    try {
+{            
+    ofstream log("log");
+    ofstream interestingLog("interestingLog");
+    
+    vector <GRBurst> burstCatalog;
+    ifstream burstsFile("bursts");
+    while (!burstsFile.eof()) {
+        string name;
+        double time;
+        float ra;
+        float dec;
+        float error;
+        double startOffset;
+        double endOffset;
         
-        ofstream log("log");
-        ofstream interestingLog("interestingLog");
+        burstsFile >> name >> time >> ra >> dec >> error >> startOffset >> endOffset;
         
-        vector <GRBurst> burstCatalog;
-        ifstream burstsFile("bursts");
-        while (!burstsFile.eof()) {
-            string name;
-            double time;
-            float ra;
-            float dec;
-            float error;
-            double startOffset;
-            double endOffset;
-            
-            burstsFile >> name >> time >> ra >> dec >> error >> startOffset >> endOffset;
-            
-            if (startOffset != 0) {
-                GRBurst burst = GRBurst(name, time, GRLocation(GRCoordinateSystemJ2000, ra, dec, error));
-                burst.startOffset = startOffset;
-                burst.endOffset = endOffset;
-                burstCatalog.push_back(burst);
-                cout << name << " " << time << " " << GRLocation(GRCoordinateSystemJ2000, ra, dec, error).description() << endl;
-            }
+        if (startOffset != 0) {
+            GRBurst burst;
+            burst.name = name;
+            burst.time = time;
+            burst.location.ra = ra;
+            burst.location.dec = dec;
+            burst.location.error = error;
+            burst.startOffset = startOffset;
+            burst.endOffset = endOffset;
+            burstCatalog.push_back(burst);
+            cout << name << " " << time << " " << GRLocation(GRCoordinateSystemJ2000, ra, dec, error).description() << endl;
         }
-                
-        //#pragma omp parallel for
-        for (int i = 0; i < burstCatalog.size(); i++) {
-                        
-            cout << "processing " << burstCatalog[i].name << "..." << endl;
-            //int gevCount = burstCatalog[i].gevCount();
-            //log << burstCatalog[i].name << " : " << gevCount << " @ " << burstCatalog[i].location.error << endl;
-            
-            log << burstCatalog[i].info() << endl;
-            
-            if (burstCatalog[i].gevCount() < 10) continue;
-            
-            //interestingLog << burstCatalog[i].name << " : " << gevCount << " @ " << burstCatalog[i].location.error << endl;
-            //continue;
-            
-            interestingLog << burstCatalog[i].info() << endl;
-            
-            vector <GRPhoton> photons = burstCatalog[i].photons();
-            for (int i = 0; i < photons.size(); i++) {
-                if (photons[i].energy < 1000.) cout << photons[i].description() << endl;
-            }
-            for (int i = 0; i < photons.size(); i++) {
-                if (photons[i].energy >= 1000.) cout << photons[i].description() << endl;
-            }
-            
-            drawCDF(burstCatalog[i], 0., 1000., burstCatalog[i].name + ".MeV.cdf");
-            drawCDF(burstCatalog[i], 1000., INFINITY, burstCatalog[i].name + ".GeV.cdf");
-            
-            int sigmaValues[5] = {1, 2, 3, 4, 5};
-            double probabilityValues[5];
-            for (int j = 0; j < 5; j++) {
-                probabilityValues[j] = 1-erf((double)sigmaValues[j]/sqrt(2.));
-            }
-            for (int j = 0; j < 5; j++) {
-                ostringstream filename;
-                filename << burstCatalog[i].name << "." << sigmaValues[j] << "s.slm";
-                drawPicture(burstCatalog[i], probabilityValues[j], filename.str(), true);
-            }
-        }
-        
-        log.close();
-        interestingLog.close();
-        
-    } catch (GRFermiLATException e) {
-        printException(e);
     }
+            
+    //#pragma omp parallel for
+    for (int i = 0; i < burstCatalog.size(); i++) {
+                    
+        cout << "processing " << burstCatalog[i].name << "..." << endl;
+        
+        burstCatalog[i].init();
+        burstCatalog[i].download();
+        burstCatalog[i].process();
+        burstCatalog[i].read();
+        
+        log << burstCatalog[i].name << " " << burstCatalog[i].gevDistribution.estimatedLinearComponent << endl;
+        
+        if ((burstCatalog[i].gevDistribution.values.size() - burstCatalog[i].gevDistribution.estimatedLinearComponent) < 10) continue;
+        
+        burstCatalog[i].evaluate();
+        
+        for (int j = 0; j < burstCatalog[i].lengtheningValues.size(); j++) {
+            if (burstCatalog[i].lengtheningValues[j] == 0.) {
+                interestingLog << " " << burstCatalog[i].name << " " << sigma(burstCatalog[i].lengtheningProbabilities[j]) << endl;
+                for (int k = 0; k < 5; k++) {
+                    interestingLog << "\t" << k+1 << " -> (" << burstCatalog[i].minLengthening[k] << ", " << burstCatalog[i].maxLengthening[k] << ")" << endl;
+                }
+                interestingLog << endl;
+            }
+        }
+        
+        ofstream probs(burstCatalog[i].name + "/probs");
+        for (int j = 0; j < burstCatalog[i].lengtheningValues.size(); j++) {
+            probs << burstCatalog[i].lengtheningValues[j] << " " << burstCatalog[i].lengtheningProbabilities[j] << endl;
+        }
+        probs.close();
+        
+        burstCatalog[i].clear();
+    }
+    
+    log.close();
+    interestingLog.close();
     
     return 0;
 }

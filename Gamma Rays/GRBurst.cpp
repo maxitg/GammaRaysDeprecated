@@ -99,11 +99,7 @@ void GRBurst::calculateBackground() {
             *(backgroundEstimationList[i]) += grbExposure / backgroundExposure;
         }
     }
-    
-    cout << "estimations: " << endl;
-    cout << mevExpectationValue << " " << mevPhotons.size() << endl;
-    cout << gevExpectationValue << " " << gevPhotons.size() << endl;
-    
+        
     mevDistribution.estimatedLinearComponent = mevExpectationValue;
     mevDistribution.start = query.startTime - (time + startOffset);
     mevDistribution.end = query.endTime - (time + startOffset);
@@ -126,11 +122,6 @@ void GRBurst::read() {
     if (backgroundQuery.error != GRFermiLATDataServerQueryErrorOk) {
         error = GRBurstErrorBackgroundQueryError;
         errorDescription = backgroundQuery.errorDescription;
-        return;
-    }
-    
-    if (query.psfs[GRFermiEventClassSource][GRFermiConversionTypeBack].spread(1000.f, 0.95) > 90.) {
-        cout << "spreaded" << endl;
         return;
     }
     
@@ -190,8 +181,8 @@ void GRBurst::evaluate() {
         }
     }
     
-    ofstream mev("mev");
-    ofstream gev("gev");
+    ofstream mev(name + "/mev");
+    ofstream gev(name + "/gev");
     gevDistribution.kolmogorovSmirnovTest(mevDistribution, 1., true, mev, gev);
     mev.close();
     gev.close();
