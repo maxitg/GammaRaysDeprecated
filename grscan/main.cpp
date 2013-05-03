@@ -15,10 +15,6 @@
 #include <sys/stat.h>
 
 #include "GRBurst.h"
-#include "GRFermiLAT.h"
-#include "GRFermiGBM.h"
-#include "GRPhotonStorage.h"
-#include "GRBurstStorage.h"
 
 using namespace std;
 
@@ -96,23 +92,6 @@ int main(int argc, const char * argv[])
         
         ofstream log("log");
         ofstream interestingLog("interestingLog");
-        /*
-        tm tm1 = {0};
-        tm1.tm_year = 70;
-        tm1.tm_mon = 0;
-        tm1.tm_mday = 1;
-        
-        tm tm2 = {0};
-        tm2.tm_year = 101;
-        tm2.tm_mon = 0;
-        tm2.tm_mday = 1;
-        
-        double now = time(NULL) + mktime(&tm1) - mktime(&tm2);
-        
-        GRBurstStorage *storage = NULL;
-        storage->getInstance();
-        vector <GRBurst> burstCatalog = storage->bursts(0., now);
-        */
         
         vector <GRBurst> burstCatalog;
         ifstream burstsFile("bursts");
@@ -126,10 +105,6 @@ int main(int argc, const char * argv[])
             double endOffset;
             
             burstsFile >> name >> time >> ra >> dec >> error >> startOffset >> endOffset;
-            
-            double duration = endOffset - startOffset;
-            startOffset -= duration*0.2;
-            endOffset += duration*0.2;
             
             if (startOffset != 0) {
                 GRBurst burst = GRBurst(name, time, GRLocation(GRCoordinateSystemJ2000, ra, dec, error));

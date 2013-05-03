@@ -71,6 +71,8 @@ public:
     void process();
     void read();
     void evaluate();
+    
+    void clear();
 };
 
 #endif /* defined(__Gamma_Rays__GRBurst__) */

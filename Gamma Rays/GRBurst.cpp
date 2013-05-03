@@ -198,3 +198,32 @@ void GRBurst::evaluate() {
     
     cout << endl;
 }
+
+void GRBurst::clear() {
+    error = GRBurstErrorNotDownloaded;
+    errorDescription = "";
+    name = "";
+    time = 0.;
+    location = GRLocation(GRCoordinateSystemJ2000, 0., 0., 0.);
+    startOffset = 0.;
+    endOffset = 0.;
+    
+    backgroundQuery = GRFermiLATDataServerQuery();
+    query = GRFermiLATDataServerQuery();
+    
+    mevPhotons.clear();
+    mevBackgroundPhotons.clear();
+    gevPhotons.clear();
+    gevBackgroundPhotons.clear();
+    
+    mevDistribution = GRDistribution();
+    gevDistribution = GRDistribution();
+    
+    for (int i = 0; i < 5; i++) {
+        minLengthening[i] = 0.;
+        maxLengthening[i] = 0.;
+    }
+    
+    lengtheningValues.clear();
+    lengtheningProbabilities.clear();
+}
