@@ -12,7 +12,6 @@
 #include <sstream>
 
 #include "GRBurst.h"
-#include "GRPhotonStorage.h"
 
 #define TIME_EXTENTION_FACTOR 1.5
 #define PHOTONS_QUALITY       0.95
@@ -181,8 +180,8 @@ void GRBurst::evaluate() {
         }
     }
     
-    ofstream mev(name + "/mev");
-    ofstream gev(name + "/gev");
+    ofstream mev((name + "/mev").c_str());
+    ofstream gev((name + "/gev").c_str());
     gevDistribution.kolmogorovSmirnovTest(mevDistribution, 1., true, mev, gev);
     mev.close();
     gev.close();

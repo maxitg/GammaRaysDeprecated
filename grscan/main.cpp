@@ -68,7 +68,6 @@ int main(int argc, const char * argv[])
         }
     }
             
-    //#pragma omp parallel for
     for (int i = 0; i < burstCatalog.size(); i++) {
                     
         cout << "processing " << burstCatalog[i].name << "..." << endl;
@@ -76,6 +75,9 @@ int main(int argc, const char * argv[])
         burstCatalog[i].init();
         burstCatalog[i].download();
         burstCatalog[i].process();
+        
+        continue;
+        
         burstCatalog[i].read();
         
         log << burstCatalog[i].name << " " << burstCatalog[i].gevDistribution.estimatedLinearComponent << endl;
@@ -94,7 +96,7 @@ int main(int argc, const char * argv[])
             }
         }
         
-        ofstream probs(burstCatalog[i].name + "/probs");
+        ofstream probs((burstCatalog[i].name + "/probs").c_str());
         for (int j = 0; j < burstCatalog[i].lengtheningValues.size(); j++) {
             probs << burstCatalog[i].lengtheningValues[j] << " " << burstCatalog[i].lengtheningProbabilities[j] << endl;
         }

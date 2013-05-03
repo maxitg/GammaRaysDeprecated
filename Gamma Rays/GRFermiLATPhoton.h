@@ -12,7 +12,7 @@
 #include <iostream>
 #include <string>
 
-#include "GRPhoton.h"
+#include "GRLocation.h"
 
 enum GRFermiConversionType {
     GRFermiConversionTypeFront = 0,

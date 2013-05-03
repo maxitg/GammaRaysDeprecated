@@ -14,6 +14,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "GRFermiLATDataServerQuery.h"
 #include "GRDistribution.h"

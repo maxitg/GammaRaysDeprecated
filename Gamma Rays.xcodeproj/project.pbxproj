@@ -10,7 +10,6 @@
 		6913421B1709EA8000D8C601 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6913421A1709EA8000D8C601 /* main.cpp */; };
 		6913421D1709EA8000D8C601 /* grspread.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6913421C1709EA8000D8C601 /* grspread.1 */; };
 		691342211709F2C300D8C601 /* GRPsf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69A656D8170839BD0070E84C /* GRPsf.cpp */; };
-		691342221709F33000D8C601 /* GRFermiLAT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */; };
 		691342231709F34000D8C601 /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 69FF3C8316FF7B3300BA79AB /* libcurl.dylib */; };
 		691342241709F35500D8C601 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656D017080D6B0070E84C /* Foundation.framework */; };
 		691342251709F35900D8C601 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A656CE17080D5C0070E84C /* Security.framework */; };
@@ -85,10 +84,6 @@
 		691342181709EA8000D8C601 /* grspread */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = grspread; sourceTree = BUILT_PRODUCTS_DIR; };
 		6913421A1709EA8000D8C601 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		6913421C1709EA8000D8C601 /* grspread.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = grspread.1; sourceTree = "<group>"; };
-		692CB57B171ACA5100665987 /* GRBurstStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRBurstStorage.cpp; sourceTree = "<group>"; };
-		692CB57C171ACA5200665987 /* GRBurstStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRBurstStorage.h; sourceTree = "<group>"; };
-		692CB57E171ACB3E00665987 /* GRFermiGBM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRFermiGBM.cpp; sourceTree = "<group>"; };
-		692CB57F171ACB3E00665987 /* GRFermiGBM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRFermiGBM.h; sourceTree = "<group>"; };
 		698CAAF3170891BB008E4415 /* libcfitsio.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcfitsio.a; path = ../../../../../usr/local/lib/libcfitsio.a; sourceTree = "<group>"; };
 		699B7318172D567000834C86 /* GRExposureMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRExposureMap.cpp; sourceTree = "<group>"; };
 		699B7319172D567000834C86 /* GRExposureMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRExposureMap.h; sourceTree = "<group>"; };
@@ -110,16 +105,10 @@
 		69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = Gamma_Rays.1; sourceTree = "<group>"; };
 		69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRBurst.cpp; sourceTree = "<group>"; };
 		69FF3C7216FF5A7C00BA79AB /* GRBurst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRBurst.h; sourceTree = "<group>"; };
-		69FF3C7416FF5A8F00BA79AB /* GRPhoton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRPhoton.cpp; sourceTree = "<group>"; };
-		69FF3C7516FF5A8F00BA79AB /* GRPhoton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRPhoton.h; sourceTree = "<group>"; };
-		69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRFermiLAT.cpp; sourceTree = "<group>"; };
-		69FF3C7816FF5A9A00BA79AB /* GRFermiLAT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRFermiLAT.h; sourceTree = "<group>"; };
 		69FF3C7A16FF5BC600BA79AB /* GRLocation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRLocation.cpp; sourceTree = "<group>"; };
 		69FF3C7B16FF5BC600BA79AB /* GRLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRLocation.h; sourceTree = "<group>"; };
 		69FF3C7D16FF5EDD00BA79AB /* GRFermiLATPhoton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRFermiLATPhoton.cpp; sourceTree = "<group>"; };
 		69FF3C7E16FF5EDD00BA79AB /* GRFermiLATPhoton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRFermiLATPhoton.h; sourceTree = "<group>"; };
-		69FF3C8016FF68CF00BA79AB /* GRPhotonStorage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GRPhotonStorage.cpp; sourceTree = "<group>"; };
-		69FF3C8116FF68CF00BA79AB /* GRPhotonStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GRPhotonStorage.h; sourceTree = "<group>"; };
 		69FF3C8316FF7B3300BA79AB /* libcurl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.dylib; path = usr/lib/libcurl.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -226,16 +215,6 @@
 				69FF3C7216FF5A7C00BA79AB /* GRBurst.h */,
 				69FF3C7116FF5A7C00BA79AB /* GRBurst.cpp */,
 				69FF3C6216FF59FF00BA79AB /* main.cpp */,
-				692CB57E171ACB3E00665987 /* GRFermiGBM.cpp */,
-				692CB57F171ACB3E00665987 /* GRFermiGBM.h */,
-				692CB57B171ACA5100665987 /* GRBurstStorage.cpp */,
-				692CB57C171ACA5200665987 /* GRBurstStorage.h */,
-				69FF3C8016FF68CF00BA79AB /* GRPhotonStorage.cpp */,
-				69FF3C8116FF68CF00BA79AB /* GRPhotonStorage.h */,
-				69FF3C7416FF5A8F00BA79AB /* GRPhoton.cpp */,
-				69FF3C7516FF5A8F00BA79AB /* GRPhoton.h */,
-				69FF3C7716FF5A9A00BA79AB /* GRFermiLAT.cpp */,
-				69FF3C7816FF5A9A00BA79AB /* GRFermiLAT.h */,
 				69FF3C6416FF59FF00BA79AB /* Gamma_Rays.1 */,
 			);
 			path = "Gamma Rays";
@@ -329,7 +308,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				691342261709F36500D8C601 /* GRLocation.cpp in Sources */,
-				691342221709F33000D8C601 /* GRFermiLAT.cpp in Sources */,
 				691342211709F2C300D8C601 /* GRPsf.cpp in Sources */,
 				6913421B1709EA8000D8C601 /* main.cpp in Sources */,
 			);

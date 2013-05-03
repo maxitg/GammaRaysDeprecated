@@ -11,6 +11,8 @@
 using namespace std;
 
 #include <sys/stat.h>
+#include <sys/errno.h>
+#include <unistd.h>
 
 #ifdef __APPLE__
 #include <CommonCrypto/CommonDigest.h>
