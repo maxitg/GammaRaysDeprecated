@@ -24,27 +24,27 @@ enum GRFermiLATDataServerQueryError {
     GRFermiLATDataServerQueryErrorNotDownloaded,
     GRFermiLATDataServerQueryErrorNotProcessed,
     GRFermiLATDataServerQueryErrorNotRead,
-    
+    // 4
     GRFermiLATDataServerQueryErrorMkdir,
     GRFermiLATDataServerQueryErrorFileOpen,
     GRFermiLATDataServerQueryErrorSymlink,
-    
+    // 7
     GRFermiLATDataServerQueryErrorCurlInit,
     GRFermiLATDataServerQueryErrorCurlPerform,
-    
+    // 9
     GRFermiLATDataServerQueryErrorFermiDataServerTooEarly,
     GRFermiLATDataServerQueryErrorFermiDataServerUnknown,
-    
+    // 11
     GRFermiLATDataServerQueryErrorFermiDataServerQuiryStateUnknown,
-    
+    // 12
     GRFermiLATDataServerQueryErrorFermiDataServerEmptyResults,
     GRFermiLATDataServerQueryErrorFermiDataServerUnknownFile,
-    
+    // 14
     GRFermiLATDataServerQueryErrorNoEventListFile,
     GRFermiLATDataServerQueryErrorNoFilteredFile,
     GRFermiLATDataServerQueryErrorNoSpacecraftFile,
     GRFermiLATDataServerQueryErrorNoLtCubeFile,
-    
+    // 18
     GRFermiLATDataServerQueryErrorGtselectFailed,
     GRFermiLATDataServerQueryErrorGtmktimeFailed,
     GRFermiLATDataServerQueryErrorGtltcubeFailed,

@@ -6,6 +6,9 @@
 //  Copyright (c) 2013 Maxim Piskunov. All rights reserved.
 //
 
+#include <sys/stat.h>
+#include <sys/errno.h>
+
 #include <math.h>
 
 #include <fstream>
@@ -13,7 +16,7 @@
 
 #include "GRBurst.h"
 
-#define TIME_EXTENTION_FACTOR 1.5
+#define TIME_EXTENTION_FACTOR 1.3
 #define PHOTONS_QUALITY       0.95
 #define LENGTHENING_MIN       0.1
 #define LENGTHENING_MAX       10.
@@ -24,14 +27,15 @@ void GRBurst::init() {
     double center = time + (startOffset + endOffset) / 2.;
     double startTime = center - duration/2.;
     double endTime = center + duration/2.;
-    
+        
     query.startTime = startTime;
     query.endTime = endTime;
     query.location = location;
-    
+        
     query.init();
     
-    duration = duration * 100;
+    //duration = duration * 100;
+    duration = 86400;
     endTime = startTime;
     startTime = startTime - duration;
     
@@ -124,10 +128,12 @@ void GRBurst::read() {
         return;
     }
     
+    cout << "event counts: " << query.events.size() << " " << backgroundQuery.events.size() << endl;
+    
     for (int i = 0; i < query.events.size(); i++) {
         GRFermiLATPhoton photon = query.events[i];
         photon.location.error = query.psfs[photon.eventClass][photon.conversionType].spread(photon.energy, PHOTONS_QUALITY);
-        //if (photon.eventClass == GRFermiEventClassTransient) continue;
+        if (photon.eventClass == GRFermiEventClassTransient) continue;
         if (location.isSeparated(photon.location)) continue;
         
         if (photon.energy < 1000.) mevPhotons.push_back(photon);
@@ -139,7 +145,7 @@ void GRBurst::read() {
     for (int i = 0; i < backgroundQuery.events.size(); i++) {
         GRFermiLATPhoton photon = backgroundQuery.events[i];
         photon.location.error = backgroundQuery.psfs[photon.eventClass][photon.conversionType].spread(photon.energy, PHOTONS_QUALITY);
-        //if (photon.eventClass == GRFermiEventClassTransient) continue;
+        if (photon.eventClass == GRFermiEventClassTransient) continue;
         if (location.isSeparated(photon.location)) continue;
         
         if (photon.energy < 1000.) mevBackgroundPhotons.push_back(photon);
@@ -162,6 +168,12 @@ void GRBurst::read() {
 }
 
 void GRBurst::evaluate() {
+    if (mkdir(name.c_str(), S_IRWXU ^ S_IRWXG ^ S_IRWXO) == -1) {
+        if (errno != EEXIST) {
+            error = GRBurstErrorMkdirFailed;
+        }
+    }
+    
     double probabilityValues[5];
     for (int i = 0; i < 5; i++) {
         probabilityValues[i] = 1-erf((double)(i+1)/sqrt(2.));
@@ -182,7 +194,7 @@ void GRBurst::evaluate() {
     
     ofstream mev((name + "/mev").c_str());
     ofstream gev((name + "/gev").c_str());
-    gevDistribution.kolmogorovSmirnovTest(mevDistribution, 1., true, mev, gev);
+    trivialProbability = gevDistribution.kolmogorovSmirnovTest(mevDistribution, 1., true, mev, gev);
     mev.close();
     gev.close();
     

@@ -28,7 +28,9 @@ enum GRBurstError {
     GRBurstErrorNotRead,
     
     GRBurstErrorQueryError,
-    GRBurstErrorBackgroundQueryError
+    GRBurstErrorBackgroundQueryError,
+    
+    GRBurstErrorMkdirFailed
     };
 
 class GRBurst {
@@ -63,9 +65,11 @@ public:
     vector <float> lengtheningValues;
     vector <float> lengtheningProbabilities;
     
+    double trivialProbability;
+    
 private:
     void calculateBackground();
-    
+        
 public:
     void init();
     void download();

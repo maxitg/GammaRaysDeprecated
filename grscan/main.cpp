@@ -54,7 +54,9 @@ int main(int argc, const char * argv[])
         
         burstsFile >> name >> time >> ra >> dec >> error >> startOffset >> endOffset;
         
-        if (startOffset != 0) {
+        if (name == "") continue;
+        
+        if ((endOffset - startOffset) != 0) {
             GRBurst burst;
             burst.name = name;
             burst.time = time;
@@ -75,26 +77,31 @@ int main(int argc, const char * argv[])
         burstCatalog[i].init();
         burstCatalog[i].download();
         burstCatalog[i].process();
-        
-        continue;
-        
         burstCatalog[i].read();
         
-        log << burstCatalog[i].name << " " << burstCatalog[i].gevDistribution.estimatedLinearComponent << endl;
+        if (burstCatalog[i].error != GRBurstErrorOk) {
+            cout << "error " << burstCatalog[i].error << " " << burstCatalog[i].query.error << " " << burstCatalog[i].backgroundQuery.error << " : " << burstCatalog[i].errorDescription << endl;
+            if (burstCatalog[i].query.error == 19) {
+                burstCatalog[i].clear();
+                continue;
+            }
+            else return -1;
+        }
         
-        if ((burstCatalog[i].gevDistribution.values.size() - burstCatalog[i].gevDistribution.estimatedLinearComponent) < 10) continue;
+        log << burstCatalog[i].name << " " << (burstCatalog[i].gevDistribution.values.size() - burstCatalog[i].gevDistribution.estimatedLinearComponent) << endl;
         
+        if ((burstCatalog[i].gevDistribution.values.size() - burstCatalog[i].gevDistribution.estimatedLinearComponent) < 10) {
+            burstCatalog[i].clear();
+            continue;
+        }
+                
         burstCatalog[i].evaluate();
         
-        for (int j = 0; j < burstCatalog[i].lengtheningValues.size(); j++) {
-            if (burstCatalog[i].lengtheningValues[j] == 0.) {
-                interestingLog << " " << burstCatalog[i].name << " " << sigma(burstCatalog[i].lengtheningProbabilities[j]) << endl;
-                for (int k = 0; k < 5; k++) {
-                    interestingLog << "\t" << k+1 << " -> (" << burstCatalog[i].minLengthening[k] << ", " << burstCatalog[i].maxLengthening[k] << ")" << endl;
-                }
-                interestingLog << endl;
-            }
+        interestingLog << burstCatalog[i].name << " " << sigma(burstCatalog[i].trivialProbability) << endl;
+        for (int k = 0; k < 5; k++) {
+            interestingLog << "\t" << k+1 << " -> (" << burstCatalog[i].minLengthening[k] << ", " << burstCatalog[i].maxLengthening[k] << ")" << endl;
         }
+        interestingLog << endl;
         
         ofstream probs((burstCatalog[i].name + "/probs").c_str());
         for (int j = 0; j < burstCatalog[i].lengtheningValues.size(); j++) {

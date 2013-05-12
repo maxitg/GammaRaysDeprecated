@@ -472,11 +472,13 @@ int GRFermiLATDataServerQuery::gtpsf(GRFermiEventClass eventClass, GRFermiConver
 void GRFermiLATDataServerQuery::process() {
     if (gtselect() != 0) {
         error = GRFermiLATDataServerQueryErrorGtselectFailed;
+        errorDescription = "gtselect failed.";
         return;
     }
     
     if (gtmktime() != 0) {
         error = GRFermiLATDataServerQueryErrorGtmktimeFailed;
+        errorDescription = "gtmktime failed. It means most likely that no photons left after filtering.";
         return;
     }
     
@@ -485,7 +487,6 @@ void GRFermiLATDataServerQuery::process() {
         return;
     }
     
-#pragma omp for
     for (int i = 0; i < GRFermiEventClassesCount; i++) {
         for (int j = 0; j < GRFermiConversionTypesCount; j++) {
             if (gtexpcube(GRFermiEventClasses[i], GRFermiConversionTypes[j]) != 0) {
